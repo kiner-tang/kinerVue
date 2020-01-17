@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="root">
+    <div class="message">你好，{{name}}</div>
+</div>
+<script type="module">
+    import KinerVue from './kinerVue.js'
+
+    let vue = new KinerVue({
+        data() {
+            return {
+                name: "kiner",
+                userInfo: {
+                    age: 20
+                },
+                classify:[3,5,2,6,3,5,6,7,1,4],
+                friends: ['bbb','aaa','ddd','ccc']
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
