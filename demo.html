@@ -9,9 +9,10 @@
     <div class="message">你好，{{name}}</div>
 </div>
 <script type="module">
-    import KinerVue from './kinerVue.js'
+    import KinerVue from './platform/web/runtime'
 
     let vue = new KinerVue({
+        el: '#root',
         data() {
             return {
                 name: "kiner",
@@ -21,8 +22,78 @@
                 classify:[3,5,2,6,3,5,6,7,1,4],
                 friends: ['bbb','aaa','ddd','ccc']
             }
+        },
+        beforeMount(){
+            console.log('准备挂载');
+            //test 生命周期钩子内代码报错
+            aaa
+        },
+        mounted(){
+            console.log('已经挂载');
+        },
+        errorCaptured(err, vm, info){
+            console.log(info,err,vm);
+        }
+
+    });
+    vue.$mount();
+
+    // test KinerVue.filter、KinerVue.directive、KinerVue.component start
+    KinerVue.filter('my-filter',()=>{
+        console.log('这是一个过滤器');
+    });
+    KinerVue.directive('my-directive',()=>{
+        console.log('这是一个指令');
+    });
+    KinerVue.component('my-component',()=>{
+        console.log('这是一个组件');
+    });
+
+    console.dir(KinerVue);
+    // test KinerVue.filter、KinerVue.directive、KinerVue.component end
+
+    // test KinerVue.use start
+    KinerVue.use({
+        install(KVue,...args){
+            KVue.myPlugins = function () {
+                console.log('这是一个插件',args);
+            }
+        }
+    },'插件1');
+    KinerVue.myPlugins();
+    console.dir(KinerVue);
+    // test KinerVue.use end
+
+    // test KinerVue.mixin start
+    KinerVue.mixin({
+        created(){
+            console.log(`mixin created`);
         }
     });
+    // test KinerVue.mixin end
+
+
+    // test KinerVue.extend start
+    let Sub = KinerVue.extend({
+        created(){
+            console.log('sub created');
+        },
+        data(){
+            return {
+                school: 'gdzit'
+            }
+        },
+        props:{
+            msg: 'hello'
+        }
+    });
+    let sub = new Sub();
+    console.log(sub);
+    sub.$watch('school',(newVal, oldVal)=>{
+        console.log(`===>检测到school属性发生变化，新值为:${newVal};旧值为：${oldVal}；`);
+    });
+    sub.school = 'zsdx';
+    // test KinerVue.extend end
 </script>
 
 </body>

@@ -1,5 +1,5 @@
 // Array.js 定义一些针对数组响应化时需要用到的辅助数据以及定义了
-import {def} from "./utils.js";
+import {def} from "../shared/utils.js";
 
 // 数组原型，在对数组方法打补丁的时候，需要用到数组原型方法用于实现原本的数组操作
 export const arrayProto = Array.prototype;

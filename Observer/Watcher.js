@@ -2,7 +2,7 @@
 // 它相当于是依赖Dep与具体的更新操作的一个中介，也可以理解为他是一个物流中转站，依赖就像是快递，具体更新操作就是快递的目的地，具体流程是这样的：
 // 我们把快递(更新)交给快递代收点（Dep）,当快递代收点（Dep）接收到快递之后，会有人来收集快递送到快递中转站(watcher),然后再由快递中转账再统一派发到不同的地址。
 import Dep from './Dep.js';
-import {parseExp, isObject,isFn} from "./utils.js";
+import {parseExp, isObject,isFn} from "../shared/utils.js";
 import {arrayMethods} from "./Array.js";
 import {traverse} from "./Traverse.js";
 
@@ -64,13 +64,15 @@ class Watcher {
             traverse(value);
         }
 
-
-        //尝试解决当value为数组或对象时，newVal和oldVal恒等问题（注：此步骤是因为个人开发原因需要获取对象或数组的新旧值，为方便操作，尝试性实现，Vue官方并无此步骤）
-        if(value.__proto__===arrayMethods){
-            value = [...value];
-        }else if(isObject(value)){
-            value = {...value}
+        if(value){
+            //尝试解决当value为数组或对象时，newVal和oldVal恒等问题（注：此步骤是因为个人开发原因需要获取对象或数组的新旧值，为方便操作，尝试性实现，Vue官方并无此步骤）
+            if(value.__proto__===arrayMethods){
+                value = [...value];
+            }else if(isObject(value)){
+                value = {...value}
+            }
         }
+
 
         // 加入依赖列表之后释放target
         Dep.target = undefined;

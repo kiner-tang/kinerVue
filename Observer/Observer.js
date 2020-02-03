@@ -5,8 +5,52 @@
  */
 
 import Dep from "./Dep.js";
-import {isPlainObject, warn, isEqual,defProtoOrArgument, hasOb, def, isA, isValidArrayIndex, hasOwn} from "./utils.js";
+import {isPlainObject, warn, isEqual,defProtoOrArgument, hasOb, def, isA, isValidArrayIndex, hasOwn} from "../shared/utils.js";
 import {arrayMethods} from "./Array.js";
+
+// 用于判断是否需要将数据变成响应化数据，默认为true,即默认需要将数据转化为响应数据，但当初始化inject时是不需要将数据转化成响应式数据的，此时便可以
+// 调用下面的 toggleObserve 方法切换
+export let shouldObserve = true;
+
+// 切换是否需要将数据变成响应化的状态
+export const toggleObserve = (val) => (shouldObserve = val);
+
+
+/**
+ * 将对象变为响应式对象，通过递归调用observer方法可以实现嵌套对象响应化
+ * @param obj   带响应化对象
+ * @param key   待响应的键值
+ * @param value 待响应的值
+ */
+export const defineReactive = (obj, key, value) => {
+
+    let childOb = createObserver(obj, value);
+
+    Object.defineProperty(obj, key, Observer.baseHandler(obj, key, value,childOb));
+
+};
+
+
+/**
+ * 判断目标数据是否已经响应化，如果响应化，则直接返回其响应化对象__ob__，佛则示例话一个响应化对象
+ * @param vm
+ * @param data
+ * @returns {*}
+ */
+export const createObserver = (vm,data) => {
+    let ob;
+    if(hasOb(data)){//该对象已经响应化，直接获取
+        ob = data.__ob__;
+    }else{
+        // 判断是否需要将数据响应化，在初始化inject时，是不需要将数据变成响应化数据的
+        if(shouldObserve){
+            ob = new Observer(vm,data);
+        }
+
+    }
+    return ob;
+};
+
 
 class Observer {
 
@@ -59,6 +103,9 @@ class Observer {
     constructor(vm, target) {
         this.$vm = vm;
 
+        this.defineReactive = defineReactive;
+        this.createObserver = createObserver;
+
         // 将跟数据target设置为已响应，以免重复创建示例
         def(target,'__ob__',this);
 
@@ -94,7 +141,7 @@ class Observer {
         let keys = Object.keys(obj);
 
         keys.forEach(key => {
-            this.defineReactive(obj, key, obj[key]);
+            defineReactive(obj, key, obj[key]);
             // 添加数据代理，将$data中的值代理到this,这样就可以直接通过this.xxx访问$data中的属性了
             this.proxyData(key);
         });
@@ -106,40 +153,9 @@ class Observer {
      */
     defineReactiveForArray(data) {
 
-        data.forEach(item=>this.createObserver(item));
+        data.forEach(item=>createObserver(this.$vm, item));
 
     }
-
-    /**
-     * 将对象变为响应式对象，通过递归调用observer方法可以实现嵌套对象响应化
-     * @param obj   带响应化对象
-     * @param key   待响应的键值
-     * @param value 待响应的值
-     */
-    defineReactive(obj, key, value) {
-
-        let childOb = this.createObserver(value);
-
-        Object.defineProperty(obj, key, Observer.baseHandler(obj, key, value,childOb));
-
-    }
-
-
-    /**
-     * 判断目标数据是否已经响应化，如果响应化，则直接返回其响应化对象__ob__，佛则示例话一个响应化对象
-     * @param data
-     * @returns {*}
-     */
-    createObserver(data){
-        let ob;
-        if(hasOb(data)){//该对象已经响应化，直接获取
-            ob = data.__ob__;
-        }else{
-            ob = new Observer(this.$vm,data);
-        }
-        return ob;
-    }
-
 
 
     /**
@@ -158,7 +174,9 @@ class Observer {
         })
     }
 
+
 }
+
 
 /**
  * 为目标对象或数组增加设置/新增值
