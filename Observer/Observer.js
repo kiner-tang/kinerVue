@@ -5,7 +5,18 @@
  */
 
 import Dep from "./Dep.js";
-import {isPlainObject, warn, isEqual,defProtoOrArgument, hasOb, def, isA, isValidArrayIndex, hasOwn} from "../shared/utils.js";
+import {
+    isPlainObject,
+    warn,
+    isEqual,
+    defProtoOrArgument,
+    hasOb,
+    def,
+    isA,
+    isValidArrayIndex,
+    hasOwn,
+    dueArrItemByIndex
+} from "../shared/utils.js";
 import {arrayMethods} from "./Array.js";
 
 // 用于判断是否需要将数据变成响应化数据，默认为true,即默认需要将数据转化为响应数据，但当初始化inject时是不需要将数据转化成响应式数据的，此时便可以
@@ -51,7 +62,9 @@ export const createObserver = (vm,data) => {
     return ob;
 };
 
-
+/**
+ * 用于将数据变成响应化数据
+ */
 class Observer {
 
     /**
@@ -189,8 +202,7 @@ export const set = (target,key,val)=>{
 
     //如果target是数组且key是合法的数组索引，则将目标值加入到数组中
     if(isA(target) && isValidArrayIndex(key)){
-        target.length = Math.max(target.length,key);
-        target.splice(key,1,val);
+        dueArrItemByIndex(target, key, val);
         return val;
     }
 
@@ -209,7 +221,7 @@ export const set = (target,key,val)=>{
         return val;
     }
 
-    // TODO 不能在跟对象this.$data和Vue示例上添加属性
+    // 不能在根对象this.$data和Vue示例上添加属性
 
     // 如果target是响应化对象，则通过Observer的defineRelative方法设置属性
     ob.defineReactive(target,key,val);
@@ -217,6 +229,7 @@ export const set = (target,key,val)=>{
     return val;
 
 };
+
 
 export const del = (target,key) => {
     //如果target是数组且key是合法的数组索引，则删除掉指定索引的数组项

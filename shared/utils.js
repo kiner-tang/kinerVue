@@ -320,6 +320,13 @@ export const isBuiltInTag = makeMap('slot,component', true);
 export const noop = () => {};
 
 /**
+ * 返回一个一模一样的结果
+ * @param _
+ * @returns {*}
+ */
+export const identity = _ => _;
+
+/**
  * 是否是浏览器环境
  * @type {boolean}
  */
@@ -636,6 +643,190 @@ export const getData = (data, vm) => {
         handleError(e, vm, `初始化data报错`);
     }
 };
+/**
+ * 默认属性描述符
+ * @type {{enumerable: boolean, configurable: boolean, get: noop, set: noop}}
+ */
+export const sharedPropertyDefinition = {
+    enumerable: true,
+    configurable: true,
+    get: noop,
+    set: noop
+};
+
+/**
+ * 在选项中查找一些目标资源
+ * @param options
+ * @param type
+ * @param id
+ * @returns {*}
+ */
+export const resolveAsset = (options, type, id) => {
+    // id只可能是字符串
+    if(typeof id !== "string"){
+        return;
+    }
+    const assets = options[type];
+
+    if(hasOwn(assets, id)) return assets[id];
+    // 若传进来的id是"my-filter"形式的字符串，则尝试通过其小驼峰形式字符串进行查找
+    let camelizeId = camelize(id);
+    if(hasOwn(assets, camelizeId)) return assets[camelizeId];
+    // 通过驼峰形式还是没找到，尝试转化成大驼峰形式（即首字母大写）
+    let capitalizeId = camelizeId(camelizeId);
+    if(hasOwn(assets, capitalizeId)) return assets[capitalizeId];
+
+    // 如果上述方式都没找到指定资源，则最后在原型链上再找一次，若找到则返回，否者警告提示
+    const res = assets[id] || assets[camelizeId] || assets[capitalizeId];
+    if(!res){
+        warn(`通过您所提供的id${id},没有找到你要找的${type}`);
+    }
+    return res;
+
+};
+
+/**
+ * 可通过此方法进行新增、删除、替换数组元素
+ * @param arr           [Array] 待处理数组
+ * @param index         [number] 待处理目标元素索引
+ * @param newItem       [any] 新增或替换的元素，删除时可传入任意值，删除时实际并不会使用这个参数化
+ * @param remove        [true|false] 当前是否是删除操作，由于数组中也有可能需要加入undefined、null、false等值，因此光靠newItem不能判断是否需要删除一个元素，因此新增此字段，
+ * @returns {*}
+ */
+export const dueArrItemByIndex = (arr, index, newItem,remove=false)=>{
+    // 由于本方法既可以处理新增，又可以处理修改，当新增元素的时候，数组长度会增加,如果是修改元素值则不变，因此，我们取目标索引值与当前数组长度两者之间的最大值设置为数组新的长度。
+    // 注意：splice方法，如果要在数组最后面添加一个元素，不需要修改数组的长度，splice会自动修改，如：
+    //
+    // var arr = [1,2,3];arr.splice(3,1,4);console.log(arr); // 输出：[1, 2, 3, 4]
+    //
+    // 但如果不是直接在数组最后面加，而是数组后几位，那么，如果不修改数组length的话，是不能正常添加的。
+    //
+    // 不修改长度：（结果是错误的，因为我们穿的index是4，是想要在索引为4也就是第5位元素上插入数字4，但结果只是在第4位插入了，其索引实际只是3，并非预期答案）
+    //
+    // var arr = [1,2,3];arr.splice(4,1,4);console.log(arr); // 输出：[1, 2, 3, 4]
+    //
+    // 修改数组长度：
+    //
+    // var arr = [1,2,3];arr.length=4;arr.splice(4,1,4);console.log(arr); // 输出：[1, 2, 3, empty, 4]
+    //
+    // 从上面的例子我们可以看出，使用splice方法添加元素，如果是直接紧接着最后一个元素添加的话，数组的长度是会自动加一，无需我们额外处理的，但是我们实际使用的时候，并不一定会紧接着最后一个元素添加，index传入的只要是合法的数组索引就可以的，所以，我们需要修正一下length用来兼容这种情况。
+    // 那么，我们要怎么确定length的长度呢，从上面的例子可以看出，当且仅当index>=arr.length时才是新增元素，其他情况则视为是修改。
+    // * 那么在新增元素的时候，其实我们只要让数组长度等于index就可以了（正如上面所说，当我们使用splice再最后添加元素时，数组长度会自动加1，如上面最后一个例子，我们刚开始将数组的长度修正为4，执行splice之后数组长度自动加1后数组长度自动变为5,而这个长度5便是我们预期要的数组长度）
+    // * 当我们在修改元素时，数组长度其实不需要变化的，还是arr.length
+    // ## 综上所述，兼容新增与修改的情况，那么数组的长度应为：arr.length = Math.max(arr.length,index);
+    arr.length = Math.max(index, arr.length);
+
+    // 如果不是删除的情况，则吧带新增或修改的元素加入到参数数组中
+    let args = remove?[index,1]:[index,1, newItem];
+
+    arr.splice.apply(arr, args);
+    return arr;
+};
+
+
+/**
+ * 判断所给字符串是非段落标签
+ * h5标签： https://html.spec.whatwg.org/multipage/indices.html#elements-3
+ * 段落标签： https://html.spec.whatwg.org/multipage/dom.html#phrasing-content
+ * @type {function(*): *}
+ */
+export const isNonPhrasingTag = makeMap(
+    'address,article,aside,base,blockquote,body,caption,col,colgroup,dd,' +
+    'details,dialog,div,dl,dt,fieldset,figcaption,figure,footer,form,' +
+    'h1,h2,h3,h4,h5,h6,head,header,hgroup,hr,html,legend,li,menuitem,meta,' +
+    'optgroup,option,param,rp,rt,source,style,summary,tbody,td,tfoot,th,thead,' +
+    'title,tr,track'
+);
+/**
+ * 自闭标签
+ * @type {function(*): *}
+ */
+export const isUnaryTag = makeMap(
+    'area,base,br,col,embed,frame,hr,img,input,isindex,keygen,' +
+    'link,meta,param,source,track,wbr'
+);
+
+/**
+ * 可以省略闭合的标签(浏览器在解析阶段会自动将这些标签给闭合上)
+ * e.g.
+ * <ul>
+ *     <li> 选项1
+ *     <li> 选项2
+ *     <li> 选项3
+ *     <li> 选项4
+ * </ul>
+ * @type {function(*): *}
+ */
+export const canBeLeftOpenTag = makeMap(
+    'colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr,source'
+);
+
+/**
+ * 转义字符对照
+ * @type {{"&lt;": string, "&gt;": string, "&quot;": string, "&amp;": string, "&#10;": string, "&#9;": string, "&#39;": string}}
+ */
+export const decodingMap = {
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&amp;': '&',
+    '&#10;': '\n',
+    '&#9;': '\t',
+    '&#39;': "'"
+};
+
+/**
+ * 判断传入的抽象语法树节点是不是一个被禁止的标签
+ * @param elem
+ * @returns {boolean}
+ */
+export const isForbiddenTag = elem => (elem.tag==="style"||(elem.tag==="script"&&(!elem.attrsMap.type||elem.attrsMap.type==="type/javascript")));
+
+/**
+ * 将数组类型的属性列表转换为map类型，方便查找
+ * e.g.
+ * attrs: [{name:"v-for",value:"(item,index) in friends"},{name:":key",value:"index+'_'+item"}]
+ * 转换为：
+ * {"v-for": "(item,index) in friends", ":key":"index+'_'+item" }
+ * @param attrs
+ */
+export const makeAttrsMap = attrs => {
+    let map = {};
+    attrs.forEach(attr=>(map[attr.name] = attr.value));
+    return map;
+};
+
+/**
+ * 将数组类型的属性列表转换为以属性名为key的对象
+ * e.g.
+ * attrs: [{name:"v-for",value:"(item,index) in friends"},{name:":key",value:"index+'_'+item"}]
+ * 转换为：
+ * {"v-for":{"name":"v-for","value":"(item,index) in friends"},":key":{"name":":key","value":"index+'_'+item"}}
+ * @param attrs
+ * @returns {*}
+ */
+export const makeRawAttrsMap = attrs => attrs.reduce((cur,next)=>{cur[next.name] = next; return cur;}, {});
+
+/**
+ * 判断所给抽象语法树节点上是否有绑定指定的动态属性
+ * @param elem
+ * @param attrName
+ * @returns {boolean}
+ */
+export const hasDynamicAttr = (elem, attrName) => elem.attrsMap[attrName] === `:${attrName}` || elem.attrsMap[attrName] === `v-bind:${attrName}`;
+
+/**
+ * 将from对象的属性覆盖到to上
+ * @param to
+ * @param from
+ * @returns {*}
+ */
+export const extend = (to, from) => {
+    for(const key in from){
+        to[key] = from[key];
+    }
+    return to;
+};
 
 export default {
     hasProto,
@@ -682,5 +873,15 @@ export default {
     getPropDefaultValue,
     capitalize,
     toRawType,
-    isReserved
+    isReserved,
+    sharedPropertyDefinition,
+    identity,
+    resolveAsset,
+    dueArrItemByIndex,
+    isNonPhrasingTag,
+    decodingMap,
+    isUnaryTag,
+    canBeLeftOpenTag,
+    isForbiddenTag,
+    makeAttrsMap
 }

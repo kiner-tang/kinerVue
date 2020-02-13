@@ -22,3 +22,13 @@ export const LIFECYCLE_HOOKS = [
     'errorCaptured',
     'serverPrefetch'
 ];
+
+/**
+ * 抽象语法树中节点的类型
+ * @type {{ELEMENT: string, TEXT: string, COMMENT: string}}
+ */
+export const AST_ITEM_TYPE = {
+    ELEMENT: 'element',//元素
+    TEXT: 'text',//文本
+    COMMENT: 'comment'//注释
+};

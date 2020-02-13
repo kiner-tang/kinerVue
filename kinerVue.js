@@ -10,6 +10,9 @@ import {initRenderMixin} from "./mixins/renderMixin.js";
 import {initGlobalApi} from "./globalApi.js";
 import {callHook} from "./shared/utils.js";
 import {initState} from "./mixins/initState.js";
+import {initInjection} from "./mixins/inject.js";
+import {initProvide} from "./mixins/initProvide.js";
+import {initCompiler} from "./compiler/initCompiler.js";
 // 预期用法
 // let vue = new KinerVue({
 //     data(){
@@ -36,11 +39,18 @@ class KinerVue {
 
     constructor(options) {
         this.$options = options;
+        this.$el = document.querySelector(options.el);
+        this.$tpl = this.$el ? this.$el.innerHTML : options.template;
 
-        callHook(this,'beforeCreate');
+        initCompiler(this.$tpl);
+
+        callHook(this, 'beforeCreate');
         // 初始化
         initMixin(KinerVue);
         this._init();
+
+        initProvide(this);
+        initInjection(this);
 
         initState(this);
         initEvent(this);
@@ -49,40 +59,39 @@ class KinerVue {
         initRenderMixin(KinerVue);
 
 
-
         let clickAFn = function (...args) {
-            console.log('clickA',args);
+            console.log('clickA', args);
         };
         let clickBFn = function (...args) {
-            console.log('clickB',args);
+            console.log('clickB', args);
         };
         let closeFn = function (...args) {
-            console.log('close',args);
+            console.log('close', args);
         };
 
         // test $on start
-        this.$on("click",clickAFn);
-        this.$on("click",clickBFn);
-        this.$on("close",closeFn);
-        this.$on("close",closeFn);
+        this.$on("click", clickAFn);
+        this.$on("click", clickBFn);
+        this.$on("close", closeFn);
+        this.$on("close", closeFn);
         // test $on end
 
         // test $emit start
-        this.$emit(["click","close"],"kiner");
-        this.$emit("close","kanger");
+        this.$emit(["click", "close"], "kiner");
+        this.$emit("close", "kanger");
         // test $emit end
 
         // test $off start
         this.$off("close");
-        this.$off("click",clickBFn);
-        this.$emit(["click","close"],"kiner");
-        this.$emit("close","kanger");
+        this.$off("click", clickBFn);
+        this.$emit(["click", "close"], "kiner");
+        this.$emit("close", "kanger");
         // test $off end
 
         // test $once start
-        this.$once('say',word=>console.log(`say ${word}`));
-        this.$emit('say','hello');// only this will be emit
-        this.$emit('say','hi');// this will be ignore
+        this.$once('say', word => console.log(`say ${word}`));
+        this.$emit('say', 'hello');// only this will be emit
+        this.$emit('say', 'hi');// this will be ignore
         // test $once end
 
         console.log(this);
@@ -95,7 +104,7 @@ class KinerVue {
             age: 18
         };
 
-        window._s = function(key){
+        window._s = function (key) {
             // console.log('---->',key,obj[key]);
             return obj[key]
         };

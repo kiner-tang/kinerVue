@@ -8,7 +8,7 @@ import {traverse} from "./Traverse.js";
 
 class Watcher {
 
-    constructor(vm,expOrFn,cb=function(){},options={immediate: true,deep: false}){
+    constructor(vm,expOrFn,cb=function(){},options={immediate: true,deep: false,computed: false}){
         // 创建实例时，将当前实例对象指向Dep的静态属性target
         this.$vm = vm;
         // 需要坚挺的表达式或者是给定的函数（注：如为函数，则可在函数内使用到的响应化对象属性都会被观察，一旦任一属性值发生变化，都会触发cb回调通知）
@@ -41,12 +41,45 @@ class Watcher {
         // 为了标志依赖的唯一性，定义一个不可重复的Set用于存储依赖的id
         this.depIds = new Set();
 
-        // 如果指定immediate=true则在实例化时离开触发get获取目标值
-        if(options.immediate){
-            this.value = this.get();
+        // 是否是计算属性
+        this.computed = options.computed;
+
+        // 监控的数据是否改变
+        // dirty为true时代表依赖发生改变了，需要重新计算结果
+        this.dirty = options.computed;
+
+        if(this.computed){
+            this.value = undefined;
+            this.dep = new Dep();
+        }else{
+            // 如果指定immediate=true则在实例化时离开触发get获取目标值
+            if(options.immediate){
+                // let oldVal = this.value;
+                this.value = this.get();
+                // cb.call(this.$vm,this.value,oldVal);
+            }
         }
 
+    }
 
+    /**
+     * 重新计算结果，并将dirty标记为false
+     */
+    evaluate(){
+        if(this.dirty){
+            this.value = this.get();
+            this.dirty = false;
+        }
+        return this.value;
+    }
+
+    /**
+     * 添加依赖
+     */
+    depend(){
+        if(this.dep && Dep.target){
+            this.dep.depend();
+        }
     }
 
     /**
@@ -79,8 +112,22 @@ class Watcher {
         return value;
     }
 
-    // 中转站已经收到快递了，准备派送，通知各位快递小哥过来拿各自负责区域（视图中的表达式或$watch中监听的方法）的快递进行派送
     update(){
+        if(this.computed){
+            if(this.dep.subs.length===0){// 如果依赖中没有订阅者，就直接将dirty标记为true就可以了
+                this.dirty = true;
+            }else{// 若依赖中存在订阅者，则触发通知更新后，还需要在通知一下这个依赖的所有订阅执行更新操作
+                this.getAnInvoke(()=>{
+                    this.dep.notify();
+                });
+            }
+        }else{
+            this.getAnInvoke(this.cb);
+        }
+    }
+
+    // 中转站已经收到快递了，准备派送，通知各位快递小哥过来拿各自负责区域（视图中的表达式或$watch中监听的方法）的快递进行派送
+    getAnInvoke(cb){
         // 接收到更新通知时，触发get方法获取改表达式最新的值
         const value = this.get();
         // vue源码中：如果value是数组/对象时，我们通过$watch((newVal,oldVal)=>{})获取到的newVal和oldVal其实是始终相等的，因为他们都是东一个对象的引用
@@ -88,8 +135,10 @@ class Watcher {
 
             const oldVal = this.value;
             this.value = value;
+            //将dirty重置为false
+            this.dirty = false;
             // 将新旧值传递给回调函数，即完成$watch('xxxxx',function(newVal,oldVal){})的通知
-            this.cb.call(this.$vm,value,oldVal);
+            cb.call(this.$vm,value,oldVal);
         }
 
         // console.log(`属性${this.expOrFn}发生了变化`);

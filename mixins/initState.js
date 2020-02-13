@@ -9,9 +9,12 @@ import {
     isSameType,
     isString,
     nativeWatch, noop,
-    proxy, toRawType,
+    proxy, sharedPropertyDefinition, toRawType,
     warn
 } from "../shared/utils.js";
+import Watcher from "../Observer/Watcher.js";
+
+import Dep from '../Observer/Dep.js';
 
 export const initState = vm => {
 
@@ -34,6 +37,11 @@ export const initState = vm => {
     if (opts.watch && opts.watch !== nativeWatch) initWatch(vm, opts.watch);
 };
 
+/**
+ * 规格化属性，传进来的不同类型的属性配置（字符串数组或对象）统一成对象形式
+ * @param options
+ * @param vm
+ */
 export const normalizeProps = (options, vm) => {
     const props = options.props;
     if (!props) return;
@@ -241,13 +249,17 @@ export const initMethods = (vm, methods) => {
     }
 
 };
+/**
+ * 初始化data数据
+ * @param vm
+ */
 export const initData = (vm) => {
     let data = vm.$options.data;
     // 若data是函数则执行函数获取data的返回值并指向vm._data同时把指针 指向data,只要data发生改变，相同指针的vm._data也也会相应发生改变
     data = vm._data = isFn(data) ? getData(data, vm) : data || {};
 
     // 如果获得的data不是一个朴素对象，则警告提示,并纠正为一个空对象，防止下面处理报错
-    if(isPlainObject(data)){
+    if (isPlainObject(data)) {
         data = {};
         warn(`data需要传入一个返回对象类型的函数，如：data(){return {name: 'kiner'}}`);
     }
@@ -259,16 +271,16 @@ export const initData = (vm) => {
 
     let i = keys.length;
 
-    while (i--){
+    while (i--) {
         const key = keys[i];
 
-        if(methods && hasOwn(methods, key)){
+        if (methods && hasOwn(methods, key)) {
             warn(`您在data中定义的属性${key}已经在methods定义过了`);
         }
 
-        if(props && hasOwn(props, key)){
+        if (props && hasOwn(props, key)) {
             warn(`您在data中定义的属性${key}已经在props定义过了`);
-        }else if(isReserved(key)){//如果key不是以$或_开头，则将数据代理到vue实例上
+        } else if (isReserved(key)) {//如果key不是以$或_开头，则将数据代理到vue实例上
             proxy(vm, `_data`, key);
         }
     }
@@ -280,10 +292,146 @@ export const initData = (vm) => {
 };
 
 // 计算属性的观察者配置
-const computedWatcherOptions = { lazy: true };
+const computedWatcherOptions = {lazy: true};
 
+/**
+ * 初始化计算属性
+ * @param vm
+ * @param computed
+ */
 export const initComputed = (vm, computed) => {
+    // 在vue实例上定义一个_computedWathers用于存储computed的watcher
+    const watchers = vm._computedWathers = Object.create(null);
 
+    for (const key in computed) {
+        const userDef = computed[key];
+        // 获取computed的getter
+        const getter = isFn(userDef) ? userDef : userDef.get;
+
+        // 如果getter不存在，则警告
+        if (getter === null) {
+            warn(`计算属性${key}未提供getter方法。`);
+        }
+
+        // 实例化watcher持续观察计算属性下使用的所有数据的变化，以便一旦某个数据更新时，及时通知更新数据，重新渲染
+        watchers[key] = new Watcher(vm, getter || noop, noop, computedWatcherOptions);
+
+        // 如果该计算属性尚未在vue实例上定义，则定义，否则警告
+        if (!(key in vm)) {
+            defineComputed(vm, key, userDef);
+        } else {
+            if (key in vm.$data) {
+                warn(`计算属性${key}已经在data中定义`);
+            } else if (vm.$options.props && key in vm.$options.props) {
+                warn(`计算属性${key}已经在props中定义`);
+            }
+        }
+    }
 };
+
+/**
+ * 定义计算属性
+ * @param vm
+ * @param key
+ * @param userDef
+ */
+export const defineComputed = (vm, key, userDef) => {
+    // 是否需要缓存，非服务端渲染都需要缓存，本vue实例暂不考虑服务端渲染的情况，因此默认都需要缓存
+    const shouldCache = true;
+
+    if (isFn(userDef)) {
+        sharedPropertyDefinition.get = shouldCache ? createComputeGetter(userDef) : userDef;
+        sharedPropertyDefinition.set = noop;// 因为sharedPropertyDefinition是共享的默认属性描述，因此，即使没有特殊逻辑，也应该将对应的set设置回默认的noop,以免收到之前设置的set的干扰
+    } else {
+        const getter = userDef.get;
+        const setter = userDef.set;
+        sharedPropertyDefinition.get = getter ? (shouldCache && userDef.cache !== false ? createComputeGetter(key) : getter) : noop;
+        sharedPropertyDefinition.set = setter ? setter : noop;
+    }
+
+    // 当set为noop时，如果用户尝试设置computed的值，则给出警告
+    if (sharedPropertyDefinition.set === noop) {
+        sharedPropertyDefinition.set = function () {
+            warn(`计算属性${key}已经指定但没有提供setter函数，因此无法改变该值`);
+        };
+    }
+
+    // 在vue实例上定义该计算属性
+    Object.defineProperty(vm, key, sharedPropertyDefinition);
+};
+
+/**
+ * 创建一个计算属性的getter方法，他是一个高阶函数，会返回一个computedGetter函数
+ * @param key
+ * @returns {computedGetter}
+ */
+export const createComputeGetter = key => {
+    return function computedGetter() {
+        // 将当前计算属性的watcher拿出来
+        const watcher = this._computedWathers && this._computedWathers[key];
+        if (watcher) {
+            // 第一个版本，有bug,官方之后修复
+            // // 当数据依赖数据发生改变时，重新计算
+            // if (watcher.dirty) {
+            //     watcher.evaluate();
+            // }
+            // // 将计算属性的watcher添加到它所依赖的所有状态的依赖列表中，一旦他所依赖的某个状态发生了改变，便会通知他的依赖列表更新
+            // if (Dep.target) {
+            //     watcher.depend();
+            // }
+            // // 返回新计算的值
+            // return watcher.value;
+
+            // 修复后仅有一下两行代码，大部分更改在Watcher.js中
+            watcher.depend();
+            return watcher.evaluate();
+        }
+    }
+};
+
+/**
+ * 初始化watch
+ * @param vm
+ * @param watch
+ */
 export const initWatch = (vm, watch) => {
+    for (const key in watch){
+        const handler = watch[key];
+        // 若传过来的是数组，则将数组总得每一个handler都取出来用createWatcher创建watcher
+        if(isA(handler)){
+            handler.forEach(h=>createWatcher(vm, key, h));
+        }else{
+            createWatcher(vm, key, handler);
+        }
+    }
+};
+
+/**
+ * 创建watcher
+ * @param vm
+ * @param key
+ * @param handler
+ * @param options
+ * @returns {Function}
+ */
+export const createWatcher = (vm, key, handler, options) => {
+    // 若handler是对象，那么可能采用的是:
+    // {
+    //      handler: function(){},
+    //      immediate: true
+    // }
+    // 因此将handler指向options,而handler则变成handler.handler
+    if(isPlainObject(handler)){
+        options = handler;
+        handler = handler.handler;
+    }
+    // 如果handler是字符串类型，那么可能采用的是；
+    // userInfo: "watchUserInfo"
+    // 代表观察函数已经定义并挂载在vue的实例上了
+    if(typeof handler === "string"){
+        handler = vm[handler];
+    }
+
+    // 通过$watch对指定的表达式进行观察，一旦发生改变，便会触发handler
+    return vm.$watch(key, handler, options);
 };
