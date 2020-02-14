@@ -10,7 +10,7 @@
     <p><span>这是内联元素</span><div>这是块级元素</div></p>
     <!--这是一个注释-->
     <ul>
-        <li> a
+        <li v-for="(item,index) in friends" :key="item+'_'+index"> {{item}}
         <li> b
         <li> c
         <li> d

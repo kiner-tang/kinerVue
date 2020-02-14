@@ -262,7 +262,7 @@ export const makeMap = (str,toLowerCase=false) => {
     let list = str.split(',');
     list.forEach(item=>(map[item]=true));
 
-    return toLowerCase?val=>map[val.toLowerCase()]:val=>map[val];
+    return toLowerCase?(val="")=>map[val.toLowerCase()]:val=>map[val];
 };
 
 /**

@@ -15,6 +15,7 @@ import {
 import {AST_ITEM_TYPE} from "../shared/constants.js";
 // 第三方html编码解码库
 import he from "../shared/he.js";
+import {optimize} from "./optimize.js";
 
 
 
@@ -26,9 +27,17 @@ export const initCompiler = (tpl, options) => {
 
     tpl = tpl.trim();
     console.log('待转换模板：', tpl);
-    let res = compilerHtml(tpl, options);
-    console.log('抽象语法树：', res);
-    return res;
+    let ast = compilerHtml(tpl, options);
+    console.log('抽象语法树：', ast);
+
+    // 如果配置为禁止优化器，则使用优化器对抽象语法树进行优化，将所有的静态节点标记出来
+    // 在编译的时候，静态节点除了第一次需要渲染之外，其他时候都是不需要重复渲染的
+    if (options.optimize !== false) {
+        optimize(ast, options)
+    }
+    console.log('经过优化器优化过后的抽象语法树：', ast);
+
+    return ast;
 };
 let currentParent = null;
 let nodeStack = new SimpleStack();
