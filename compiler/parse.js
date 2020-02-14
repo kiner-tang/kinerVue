@@ -1,4 +1,5 @@
 import {
+    cached,
     canBeLeftOpenTag,
     decodingMap,
     isNonPhrasingTag,
@@ -9,14 +10,15 @@ import {
 import {
     attribute,
     comment,
-    conditionalComment,
+    conditionalComment, defaultTagRE,
     doctype,
     dynamicArgAttribute, encodedAttr, encodedAttrWithNewLines,
-    endTag,
+    endTag, regexEscapeRE,
     startTagClose,
     startTagOpen
 } from "../shared/RE.js";
 import SimpleStack from "../shared/SimpleStack.js";
+import {parseFilter} from "./filter-paser.js";
 
 
 // #5992 忽略pre和textarea标签的第一个换行符
@@ -253,6 +255,15 @@ export const parseHTML = (html, options) => {
         //      <li> 选项3
         //      <li> 选项4
         // </ul>
+        // ？？？如果加上这个判断的话，回到值触发两次end回调，因为在浏览器中出现上述情况时，我们再获取outerHTML的时候浏览器已经把元素转换为：
+        //
+        // <ul>
+        //     <li> a
+        //     </li><li> b
+        //     </li><li> c
+        //     </li><li> d
+        // </li></ul>
+
         if (canBeLeftOpenTag(tagName) && tagName === lastTag) {
             parseEndTag(lastTag);
         }
@@ -331,8 +342,13 @@ export const parseHTML = (html, options) => {
         }
 
         if (pos >= 0) {
-            //找到了开始标签了说明这个结束标签是有效的，触发endHook
-            endHook(stack.get(pos).tag, startIndex, endIndex);
+            let popElems = stack.popItemByStartIndex(pos);
+            popElems.forEach(elem=>{
+                //找到了开始标签了说明这个结束标签是有效的，触发endHook
+                endHook(elem.tag, startIndex, endIndex);
+            });
+            let top = stack.top();
+            (top&&(lastTag = top.tag));
         } else if (lowerCaseTagName === "br") {
             // br是一个自闭的标签,有三种写法：<br/> 或 <br> 或 </br>
             // 这里就是匹配第三中写法的，虽然这种写法很少见，而且不太推荐使用，
@@ -349,19 +365,38 @@ export const parseHTML = (html, options) => {
 
     }
 };
+
+/**
+ * 构建动态文本转化正则表达式
+ * @type {function(*): *}
+ */
+const buildRegex = cached(delimiters => {
+    // 将分割符变为转义字符
+    // "{{".replace(/[-.*+?^${}()|[\]\/\\]/g,'\\$&');
+    // \{\{
+    const open = delimiters[0].replace(regexEscapeRE, '\\$&');
+
+    // "}}".replace(/[-.*+?^${}()|[\]\/\\]/g,'\\$&');
+    // \}\}
+    const close = delimiters[1].replace(regexEscapeRE, '\\$&');
+
+    return new RegExp(open + '((?:.|\\n)+?)' + close, 'g')
+})();
+
 /**
  * 文本解析器，用于解析文本中的变量
- * @param text
- * @returns {string}
+ * @param {String} text
+ * @param {Array} delimiters        分隔符，默认是：["{{","}}"]
+ * @returns {Object}
  */
-export const parseText = text => {
-    const expRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
-    if (!expRE.test(text)) return;
+export const parseText = (text, delimiters) => {
+    const expRE = delimiters ? buildRegex(delimiters) : defaultTagRE;
+    if (!expRE.test(text)) return '';
 
     // 将正则的游标移动到开始的位置
     let lastIndex = expRE.lastIndex = 0;
 
-    let match, index, res = [];
+    let match, index, res = [],tokenValue = '',rawTokens = [],exp;
 
     while ((match = expRE.exec(text))) {
 
@@ -369,10 +404,16 @@ export const parseText = text => {
 
         // 将{{之前的文本加入到结果数组
         if (index > lastIndex) {
-            res.push(JSON.stringify(text.slice(lastIndex, index)));
+            rawTokens.push((tokenValue = text.slice(lastIndex, index)))
+            res.push(JSON.stringify(tokenValue));
         }
+
+        exp = match[1].trim();
+        // 解析过滤器
+        exp = parseFilter(exp);
         // 将解析出来的变量转化为调用方法的方式并加入结果数组如：_s(name)
-        res.push(`window._s('${match[1].trim()}')`);
+        res.push(`window._s('${exp}')`);
+        rawTokens.push({ '@binding': exp });
 
         // 设置lastIndex保证下一次循环不会重复匹配已经解析过的文本
         lastIndex = index + match[0].length;
@@ -381,9 +422,13 @@ export const parseText = text => {
 
     // 将}}之后的文本加入到结果数组
     if (lastIndex < text.length) {
-        res.push(JSON.stringify(text.slice(lastIndex)));
+        rawTokens.push((tokenValue = text.slice(lastIndex)));
+        res.push(JSON.stringify(tokenValue));
     }
 
-    return res.join('+');
+    return {
+        exp: res.join('+'),
+        tokens: rawTokens
+    };
 };
 

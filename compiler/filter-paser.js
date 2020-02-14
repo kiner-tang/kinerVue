@@ -12,6 +12,7 @@ export const parseFilter = exp => {
         filters.forEach(filter=>{
             expression = wrapFilter(expression, filter.trim());
         });
+        return expression;
     }
 };
 

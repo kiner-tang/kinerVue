@@ -126,3 +126,92 @@ export const forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/;
  * @type {RegExp}
  */
 export const stripParensRE = /^\(|\)$/g;
+
+/**
+ * 用于切割style中的css
+ * e.g.
+ * "color:#FFF;background:url(../images/1.png);font-size:10px;".split(listDelimiter);
+ * 转换为：
+ * ["color:#FFF", "background:url(../images/1.png)", "font-size:10px", ""]
+ * @type {RegExp}
+ */
+export const listDelimiter = /;(?![^(]*\))/g;
+
+/**
+ * 用于将样式名和样式值分开
+ * e.g.
+ * "color:#FFF".split(propertyDelimiter);
+ * 转换为：
+ * ["color", "#FFF", ""]
+ * @type {RegExp}
+ */
+export const propertyDelimiter = /:(.+)/;
+
+/**
+ * 校验合法指令
+ * @type {RegExp}
+ */
+export const dirRE = /^v-|^@|^:|^\.|^#/;
+
+/**
+ * 解析属性描述符
+ * @type {RegExp}
+ */
+export const modifierRE = /\.[^.\]]+(?=[^\]]*$)/g;
+
+/**
+ * 用于解析绑定属性的指令
+ * e.g.
+ * <div :value="value"></div>
+ * <div v-bind:src="src"></div>
+ * <div .title="title"></div>   这种是<div v-bind:title.prop="title"></div>的缩写形式
+ * @type {RegExp}
+ */
+export const bindRE = /^:|^\.|^v-bind:/;
+/**
+ * 解析属性描述符.prop的简写形式
+ * <div .title="title"></div>
+ * @type {RegExp}
+ */
+export const propBindRE = /^\./;
+
+/**
+ * 解析事件属性描述符
+ * @type {RegExp}
+ */
+export const onRE = /^@|^v-on:/;
+
+/**
+ * 解析动态属性名的参数
+ * @type {RegExp}
+ */
+export const dynamicArgRE = /^\[.*\]$/;
+
+/**
+ * 解析普通指令的参数
+ * @type {RegExp}
+ */
+export const argRE = /:(.*)$/;
+
+/**
+ * 匹配换行符
+ * @type {RegExp}
+ */
+export const lineBreakRE = /[\r\n]/;
+/**
+ * 匹配空白字符
+ * @type {RegExp}
+ */
+export const whitespaceRE = /\s+/g;
+/**
+ * 默认文本解析
+ * e.g.
+ * {{name}}
+ * @type {RegExp}
+ */
+export const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
+/**
+ * 匹配合法的分隔符
+ * @type {RegExp}
+ */
+export const regexEscapeRE = /[-.*+?^${}()|[\]\/\\]/g;

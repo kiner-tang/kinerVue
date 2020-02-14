@@ -30,5 +30,6 @@ export const LIFECYCLE_HOOKS = [
 export const AST_ITEM_TYPE = {
     ELEMENT: 'element',//元素
     TEXT: 'text',//文本
-    COMMENT: 'comment'//注释
+    COMMENT: 'comment',//注释
+    EXPRESSION: 'expression',// 表达式文本
 };

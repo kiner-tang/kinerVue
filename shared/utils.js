@@ -2,7 +2,7 @@
 
 import {LIFECYCLE_HOOKS} from "./constants.js";
 import config from "../config";
-import {camelizeRE, hyphenateRE, simpleCheckRE} from "./RE.js";
+import {camelizeRE, hyphenateRE, listDelimiter, propertyDelimiter, simpleCheckRE} from "./RE.js";
 
 /**
  * 判断对象是否支持__proto__属性
@@ -828,6 +828,64 @@ export const extend = (to, from) => {
     return to;
 };
 
+/**
+ * 将行间样式style转化为map对象
+ * @type {function(*): *}
+ */
+export const parseStyleText = cached(text=>{
+    let map = {};
+    text.split(listDelimiter).forEach(item=>{
+        if(item){
+            const tmp = item.split(propertyDelimiter);
+            tmp.length>1&&(map[tmp[0].trim()] = tmp[1].trim());
+        }
+    });
+
+    return map;
+});
+
+
+const acceptValue = makeMap('input,textarea,option,select,progress');
+/**
+ * 判断当前标签是否必须使用prop绑定属性（不能用setAttribute()）
+ * @param tag
+ * @param type
+ * @param attr
+ * @returns {boolean|*}
+ */
+export const mustUseProp = (tag, type, attr) => {
+    return (
+        (attr === 'value' && acceptValue(tag)) && type !== 'button' ||
+        (attr === 'selected' && tag === 'option') ||
+        (attr === 'checked' && tag === 'input') ||
+        (attr === 'muted' && tag === 'video')
+    )
+};
+
+/**
+ * 一个空的只读对象
+ * @type {Readonly<{}>}
+ */
+export const emptyObject = Object.freeze({});
+
+/**
+ * 获取当前浏览器的userAgent
+ * @type {boolean|string}
+ */
+export const UA = inBrowser && window.navigator.userAgent.toLowerCase();
+/**
+ * 判断是否是IE浏览器
+ * @type {boolean|string|boolean}
+ */
+export const isIE = UA && /msie|trident/.test(UA);
+
+/**
+ * 判断传入标签是否为纯文本标签
+ * @param elem
+ * @returns {boolean}
+ */
+export const isTextTag = elem => ["script","style"].includes(elem.tag);
+
 export default {
     hasProto,
     isPlainObject,
@@ -883,5 +941,7 @@ export default {
     isUnaryTag,
     canBeLeftOpenTag,
     isForbiddenTag,
-    makeAttrsMap
+    makeAttrsMap,
+    extend,
+    parseStyleText
 }

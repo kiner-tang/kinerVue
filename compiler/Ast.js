@@ -38,11 +38,19 @@ export const createASTElement = (tag, attrs, parent) => {
 export const cloneAstElement = (elem) => createASTElement(elem.tag, [...elem.attrList], elem.parent);
 
 /**
+ * 创建一个抽象语法树的表达式文本节点
+ * @param text
+ * @param exp           如果是插值表达式的话，会解析出表达式
+ * @param tokens        ext = JSON.stringify(tokens)
+ * @returns {{type: string, text: *}}
+ */
+export const createASTExpression = (text, exp, tokens) => ({type: AST_ITEM_TYPE.EXPRESSION, text, exp, tokens});
+/**
  * 创建一个抽象语法树的文本节点
  * @param text
  * @returns {{type: string, text: *}}
  */
-export const createASTText = text => ({type: AST_ITEM_TYPE.TEXT, text});
+export const createASTText = (text) => ({type: AST_ITEM_TYPE.TEXT, text});
 
 /**
  * 创建一个抽象语法树的注释节点

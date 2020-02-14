@@ -40,9 +40,14 @@ class KinerVue {
     constructor(options) {
         this.$options = options;
         this.$el = document.querySelector(options.el);
-        this.$tpl = this.$el ? this.$el.innerHTML : options.template;
+        this.$tpl = this.$el ? this.$el.outerHTML : options.template;
+        this.$delimiters = ["{{","}}"];
+        this.$whitespaceOption = 'condense';// preserve | condense
 
-        initCompiler(this.$tpl);
+        initCompiler(this.$tpl,{
+            whitespaceOption: this.$whitespaceOption,
+            delimiters: this.$delimiters
+        });
 
         callHook(this, 'beforeCreate');
         // 初始化

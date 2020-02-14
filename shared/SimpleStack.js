@@ -37,8 +37,8 @@ class SimpleStack {
         return this.stack[pos];
     }
 
-    removeItemByStartIndex(index){
-        this.stack.length = index;
+    popItemByStartIndex(index){
+        return this.stack.splice(index).reverse();
     }
 
     clear(){

@@ -1,6 +1,6 @@
 import KinerVue from './platform/web/runtime'
 
-let tpl = `<div class="message">你好，{{name}}</div>
+let tpl = `<div id="app"><div class="message">你好，{{name}}</div>
     <p v-if="userInfo.age===20"><span>这是内联元素</span><div>这是块级元素</div></p>
     <!--这是一个注释-->
         <ul :title="name">
@@ -12,11 +12,11 @@ let tpl = `<div class="message">你好，{{name}}</div>
         <br/>
         <br>
         </br>
-        地方发生反倒是</p>`;
+        地方发生反倒是</p></div>`;
 
 let vue = new KinerVue({
-    // el: '#root',
-    template: tpl,
+    el: '#root',
+    // template: tpl,
     data() {
         return {
             name: "kiner",
