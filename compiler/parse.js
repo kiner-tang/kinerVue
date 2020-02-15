@@ -381,7 +381,7 @@ const buildRegex = cached(delimiters => {
     const close = delimiters[1].replace(regexEscapeRE, '\\$&');
 
     return new RegExp(open + '((?:.|\\n)+?)' + close, 'g')
-})();
+});
 
 /**
  * 文本解析器，用于解析文本中的变量

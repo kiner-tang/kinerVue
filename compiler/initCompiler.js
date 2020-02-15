@@ -20,8 +20,7 @@ import {optimize} from "./optimize.js";
 
 
 // 将解码方法加入到缓存中
-const decodeHTMLCached = cached(he.decode)();
-// console.log('{{{{{{{{{{',decodeHTMLCached('<div>'));
+const decodeHTMLCached = cached(he.decode);
 
 export const initCompiler = (tpl, options) => {
 

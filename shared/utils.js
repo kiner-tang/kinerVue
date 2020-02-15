@@ -445,7 +445,7 @@ export const cached = (fn) => {
 
     return (name)=>{
         const cacheFn = cache[name];
-        return cacheFn ? cacheFn : (cache[name] = fn);
+        return cacheFn ? cacheFn : (cache[name] = fn(name));
     };
 };
 
