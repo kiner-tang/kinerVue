@@ -51,16 +51,16 @@
 │   └── renderMixin.js          mixins/renderMixin.js
 ├── platform                    vue同时支持web端和weex端，此目录便是用来存放两端差异化代码的目录（KinerVue仅实现web端，创建此目录只是为了更好的区分与平台相关的逻辑）
 │   └── web
-│       └── compiler								将web平台的编译器导出
-│       │   ├── index.js						调用编译器创建者撞见编译器，并导出编译后的结果供外部调用
-│       │   └── options.js					创建编译器时的一些与平台有关的基础选项
-│       └── runtime									web运行时相关代码
-│           ├── index.js						实现针对web端的$mount方法并挂在全局api,导出KinerVue，web端引用KinerVue的入口文件
+│       └── compiler                将web平台的编译器导出
+│       │   ├── index.js            调用编译器创建者撞见编译器，并导出编译后的结果供外部调用
+│       │   └── options.js          创建编译器时的一些与平台有关的基础选项
+│       └── runtime                 web运行时相关代码
+│           ├── index.js            实现针对web端的$mount方法并挂在全局api,导出KinerVue，web端引用KinerVue的入口文件
 │           ├── modules             *本次尚未涉及，暂不实现
 │           │   └── events.js       *本次更新未使用，以后将更新
-│           ├── nodeOps.js					本文件便是web渲染引擎，所有涉及到浏览器渲染dom节点的操作，都在此处定义，那么，当需要渲染出web页面时，只需要指定本引擎便可渲染出web页面
-│           └── utils								web平台运行时的一些工具方法，如兼容性处理等
-│               └── compat.js				判断目标环境，对一些有差异的浏览器操作进行一些兼容性处理和判断
+│           ├── nodeOps.js          本文件便是web渲染引擎，所有涉及到浏览器渲染dom节点的操作，都在此处定义，那么，当需要渲染出web页面时，只需要指定本引擎便可渲染出web页面
+│           └── utils               web平台运行时的一些工具方法，如兼容性处理等
+│               └── compat.js       判断目标环境，对一些有差异的浏览器操作进行一些兼容性处理和判断
 ├── render-helpers									渲染时的助手，即生成虚拟DOM的助手集合
 │   ├── helpers											
 │   │   ├── bind-dynamic-keys.js         即运行时执行的_d方法，用于处理一些东岱的属性
