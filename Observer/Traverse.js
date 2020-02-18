@@ -1,4 +1,4 @@
-// Traverse.js 通过traverse递归访问指定对象，通过触发getter的方式实现依赖收集
+// Observer/Traverse.js 通过traverse递归访问指定对象，通过触发getter的方式实现深度依赖收集
 import {isA,isObject,hasOb} from "../shared/utils.js";
 
 // 用于存储依赖id

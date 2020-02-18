@@ -1,3 +1,4 @@
+// platform/web/runtime/utils/compat.js 判断目标环境，对一些有差异的浏览器操作进行一些兼容性处理和判断
 import {inBrowser} from "../../../../shared/utils.js";
 
 let div;

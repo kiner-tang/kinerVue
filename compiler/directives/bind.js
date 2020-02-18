@@ -1,7 +1,6 @@
-
-
+// compiler/directives/bind.js 将v-bind指令生成代码片段
 /**
- * 用于将v-bind省城代码片段
+ * 用于将v-bind生成代码片段
  * @param elem  目标元素
  * @param dir   指令
  */

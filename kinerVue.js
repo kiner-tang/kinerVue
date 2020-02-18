@@ -12,7 +12,7 @@ import {callHook} from "./shared/utils.js";
 import {initState} from "./mixins/initState.js";
 import {initInjection} from "./mixins/inject.js";
 import {initProvide} from "./mixins/initProvide.js";
-import {compile,compileToFunctions} from "./platform/compiler";
+import {compile,compileToFunctions} from "./platform/web/compiler";
 import {initRenderHelper} from './render-helpers/index.js';
 // 预期用法
 // let vue = new KinerVue({

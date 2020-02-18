@@ -1,6 +1,13 @@
+// VDOM/helpers.js 生成虚拟dom时的助手，这里定义了规格化子节点的方法，用于处理一些如因为v-for导致子节点列表children中出现嵌套数组的情况，
+// 规格化子节点就是将这个数组打平，同时对子节点做一些优化（如：将相邻的文本节点合并，从而减少虚拟节点的常见以及之后对比与渲染的开销等）
 import {isA, isDef, isPrimitive, isUnDef} from "../shared/utils.js";
 import {createTextVNode} from "./VNode.js";
 
+/**
+ * 对子节点进行规格化
+ * @param children
+ * @returns {*[]}
+ */
 export const normalizeChildren = children => {
     return isPrimitive(children)?[createTextVNode(children)]:isA(children)?normalizeArrayChildren(children):undefined;
 };
@@ -14,6 +21,12 @@ function isTextNode(node){
     return isDef(node) && isDef(node.text) && !node.comment;
 }
 
+/**
+ * 规格化数组类子节点
+ * @param children
+ * @param nestedIndex
+ * @returns {Array}
+ */
 export const normalizeArrayChildren = (children, nestedIndex) => {
     const res = [];
     let i,child,lastIndex,lastChild;

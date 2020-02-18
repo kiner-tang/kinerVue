@@ -1,3 +1,4 @@
+// render-helpers/helpers/render-list.js 运行时的_l方法，用于渲染v-for的标签
 import {hasSymbol, isA, isObject, isString, isUnDef} from "../../shared/utils.js";
 
 /**

@@ -1,3 +1,5 @@
+// compiler/compile-tpl-to-ast.js 本文件用于将一个html模板生成一个抽象语法树
+
 import {parseHTML, parseText} from "./parse.js";
 import SimpleStack from "../shared/SimpleStack.js";
 import {cached, isForbiddenTag, isIE, isPreTag, isTextTag, warn} from "../shared/utils.js";
@@ -13,11 +15,9 @@ import {
     processRawAttrs
 } from "./helper.js";
 import {AST_ITEM_TYPE} from "../shared/constants.js";
+
 // 第三方html编码解码库
 import he from "../shared/he.js";
-
-
-
 // 将解码方法加入到缓存中
 const decodeHTMLCached = cached(he.decode);
 
@@ -40,6 +40,12 @@ let inVPre = false;// 是否标记了v-pre,若标记了，则编译时可以跳�
 let inPre = false;// 当前标签是否为pre标签
 let root;// 根节点
 
+/**
+ * 编译html模板，编译完成返回抽象语法树的根节点
+ * @param tpl
+ * @param options
+ * @returns {*}
+ */
 export const compilerHtml = (tpl, options) => {
 
     parseHTML(tpl, {
@@ -211,11 +217,15 @@ export const compilerHtml = (tpl, options) => {
             }
         }
     });
+
     return root;
 };
 
 let warned = false;
-
+/**
+ * 辅助警告提示类，由于在生成模板过程是在循环体里面，为避免重复警告提示，定义这个只要提示一次就不再提示的警告方法
+ * @param message
+ */
 function warnOnce(message) {
     if (!warned) {
         warn(message);

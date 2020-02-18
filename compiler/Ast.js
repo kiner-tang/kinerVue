@@ -1,3 +1,5 @@
+// compiler/Ast.js 抽象语法树相关操作，此文件定义了一些创建抽象语法树节点的便捷方法
+
 import {makeAttrsMap, makeRawAttrsMap} from "../shared/utils.js";
 import {AST_ITEM_TYPE} from "../shared/constants.js";
 

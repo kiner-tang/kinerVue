@@ -1,3 +1,4 @@
+// mixins/eventMixin.js 对事件对象的初始化，并提供了在KinerVue原型上挂载事件相关的方法如：$on,$off,$emit,$once等方法
 import {cached, invokeWithErrorHandle, isA, isUnDef, warn} from "../shared/utils.js";
 
 /**

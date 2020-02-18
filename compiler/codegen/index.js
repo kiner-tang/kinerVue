@@ -1,3 +1,4 @@
+// compiler/codegen/index.js 本文件实现了出事件代码片段生成器主体逻辑之外的其他情况的代码生成，如：元素代码片段生成、属性代码片段生成、v-for、v-if等特殊指令的代码生成等
 import {extend, isA, isNative, isReservedTag, isUnDef, no, warn} from "../../shared/utils.js";
 import baseDirectives from "../directives";
 import {bindDynamicKeys} from "../../render-helpers/helpers/bind-dynamic-keys.js";
@@ -5,6 +6,9 @@ import {genHandlers} from "./event.js";
 import {AST_ITEM_TYPE} from "../../shared/constants.js";
 import VNode from "../../VDOM/VNode.js";
 
+/**
+ * 代码生成器的状态管理类
+ */
 export class CodegenState {
     // 编译器选项
     compilerOption;
@@ -47,6 +51,12 @@ export class CodegenState {
     }
 }
 
+/**
+ * 代码生成器的入口
+ * @param ast
+ * @param options
+ * @returns {{render: string, staticRenderFns: *}}
+ */
 export const generate = (ast, options) => {
     // 根据配置生成一个代码生成器状态类实例
     const state = new CodegenState(options);

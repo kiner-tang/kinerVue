@@ -1,3 +1,5 @@
+// shared/nextTick.js 通过宏任务原理实现nextTick的底层逻辑
+
 import {isNative} from "./utils.js";
 // 定义一个用于存储任务列表的数组
 let callbacks = [];

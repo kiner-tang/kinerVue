@@ -1,6 +1,13 @@
+// compiler/codegen/event.js 此文件用于处理事件代码片段生成的相关逻辑，由于事件处理代码片段的生成相对复杂，因此单独拆分出来一个文件
 import {isA} from "../../shared/utils.js";
 import {fnExpRE, fnInvokeRE, simplePathRE} from "../../shared/RE.js";
 
+/**
+ * 用于批量生成事件处理函数的代码片段
+ * @param events
+ * @param isNative
+ * @returns {string}
+ */
 export const genHandlers = (events, isNative) => {
     const prefix = isNative ? 'nativeOn:' : 'on:';
 
@@ -29,6 +36,11 @@ export const genHandlers = (events, isNative) => {
     }
 };
 
+/**
+ * 生成单个事件处理函数的代码片段
+ * @param handler
+ * @returns {*}
+ */
 export const genHandler = handler => {
     // 如果事件不存在，则返回一个空函数代码
     if (!handler) {

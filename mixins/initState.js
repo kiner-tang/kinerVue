@@ -1,3 +1,5 @@
+// mixins/initState.js 初始化状态，在vue中，所谓的状态其实包括props、methods、data、computed、watch，
+// 也就是我们再实例化vue时传过去的属性、方法、数据、计算属性以及观察方法
 import {createObserver, defineReactive, shouldObserve, toggleObserve} from "../Observer/Observer.js";
 import {
     assertType, bind,
@@ -14,8 +16,10 @@ import {
 } from "../shared/utils.js";
 import Watcher from "../Observer/Watcher.js";
 
-import Dep from '../Observer/Dep.js';
-
+/**
+ * 初始化状态
+ * @param vm
+ */
 export const initState = vm => {
 
     // 用于收集所有的观察者对象，包括用户通过$watch添加的监听

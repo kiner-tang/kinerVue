@@ -1,3 +1,5 @@
+// compiler/parse.js 定义了用于真正解析html模板和解析文本（包括静态文本和带参数的动态文本）的方法
+
 import {
     cached,
     canBeLeftOpenTag,
@@ -25,7 +27,11 @@ import {parseFilter} from "./filter-paser.js";
 const isIgnoreNewlineTag = makeMap('pre,textarea', true);
 const shouldIgnoreFirstNewline = (tag, html) => tag && isIgnoreNewlineTag(tag) && html[0] === '\n';
 
-
+/**
+ * 解析html模板，并通过不断触发钩子函数通知调用者手机相关信息创建抽象语法树
+ * @param html
+ * @param options
+ */
 export const parseHTML = (html, options) => {
     let {
         start: startHook = noop,

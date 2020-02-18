@@ -1,3 +1,7 @@
+// shared/constants.js 对一些全局的静态信息进行存储，如生命周期钩子名称、ast节点类型等
+
+
+// 资源类型
 export const ASSET_TYPES = [
     'component',
     'directive',

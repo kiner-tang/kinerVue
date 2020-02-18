@@ -1,3 +1,4 @@
+// render-helpers/helpers/render-static.js 用于渲染与标记一个静态节点树
 import {isA, isString} from "../../shared/utils.js";
 
 /**

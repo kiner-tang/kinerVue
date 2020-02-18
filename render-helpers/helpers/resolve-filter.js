@@ -1,3 +1,4 @@
+// render-helpers/helpers/resolve-filter.js 用于从全局options中找到目标过滤器
 import {identity, resolveAsset} from "../../shared/utils.js";
 import KinerVue from "../../kinerVue.js";
 

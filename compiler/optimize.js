@@ -1,4 +1,4 @@
-//优化器，对通过解析器生成的抽象语法树中的静态节点和静态根节点进行标记，在渲染阶段便可以跳过这些渲染节点进行渲染，以提升效率
+// compiler/optimize.js 优化器，对通过解析器生成的抽象语法树中的静态节点和静态根节点进行标记，在渲染阶段便可以跳过这些渲染节点进行渲染，以提升效率
 import {AST_ITEM_TYPE} from "../shared/constants.js";
 import {cached, isBuiltInTag, isReservedTag, makeMap} from "../shared/utils.js";
 

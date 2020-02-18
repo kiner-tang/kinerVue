@@ -1,8 +1,8 @@
+// compiler/filter-paser.js 提供解析并生成过滤器的相关方法
 /**
  * 解析过滤器
  * @param exp
  */
-
 export const parseFilter = exp => {
     // 通过split将表达式切割成过滤器列表
     let filters = exp.split("|");

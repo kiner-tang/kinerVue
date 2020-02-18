@@ -1,5 +1,5 @@
+// compiler/directives/model.js 提供一些能够解析并生成与v-model相关的代码片段
 let len, index, tmpStr, expPos, expEndPos, curChar;
-
 
 /**
  * 用于生成v-model值的跨平台代码生成器助手

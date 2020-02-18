@@ -1,3 +1,5 @@
+// shared/SimpleStack.js 实现了一个简单的栈
+
 class SimpleStack {
     constructor() {
         this.stack = [];

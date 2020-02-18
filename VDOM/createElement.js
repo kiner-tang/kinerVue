@@ -1,3 +1,4 @@
+// VDOM/createElement.js 定义了用于创建VNode一些方法，便在创建是做一些抽象语法树传过来的数据做一些预处理，方便后续用于渲染页面
 import {hasOb, isDef, warn} from "../shared/utils.js";
 import {createElemVNode, createEmptyVNode, createTextVNode} from "./VNode.js";
 import {normalizeChildren} from "./helpers.js";
@@ -6,7 +7,7 @@ export const createElement = (tag,data,children,textContent,isComment,ctx) => {
     return _createElement(tag,data,children,textContent,isComment,ctx);
 };
 
-export const _createElement = (tag,data,children,textContent,isComment,ctx) => {
+const _createElement = (tag,data,children,textContent,isComment,ctx) => {
 
     if(isDef(data) && hasOb(data)){
         warn(`避免使用已经被Observer观察的数据作为元素的数据对象`);

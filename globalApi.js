@@ -1,7 +1,12 @@
+// globalApi.js 将全局api如extent、set、del、filter、directive、component、use、mixin等挂载到KinerVue上
 import {isFn, isPlainObject, mergeOptions, proxy} from "./shared/utils.js";
 import {ASSET_TYPES} from "./shared/constants.js";
 import {set, del} from "./Observer/Observer.js";
 
+/**
+ * 将全局api如extent、set、del、filter、directive、component、use、mixin等挂载到KinerVue上
+ * @param KinerVue
+ */
 export const initGlobalApi = KinerVue => {
     let cid = 1;
 

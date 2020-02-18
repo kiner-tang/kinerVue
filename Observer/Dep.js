@@ -1,4 +1,4 @@
-// Dep.js 依赖类，用于统一管理观察者，一旦依赖跟新，便可通过此类的notify方法通知其订阅的所有
+// Observer/Dep.js 依赖类，用于统一管理观察者，一旦依赖跟新，便可通过此类的notify方法通知其订阅的所有
 // 观察者进行更新数据
 
 import {removeArrItem} from "../shared/utils.js";

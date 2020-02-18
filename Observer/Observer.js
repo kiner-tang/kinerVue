@@ -1,3 +1,4 @@
+// Observer/Observer.js 数据响应化对象
 /**
  * Observer.js 数据响应化对象
  * Vue数据响应化的核心，Vue2.0时代通过Object.defineProperty方式进行数据响应化，而Vue3.0时代则采用Proxy和Reflect方式实现

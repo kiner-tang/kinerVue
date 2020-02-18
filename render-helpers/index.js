@@ -9,7 +9,7 @@ import {resolveFilter} from "./helpers/resolve-filter.js";
 import {looseEqual, looseIndexOf, toNumber, toString} from "../shared/utils.js";
 import {createEmptyVNode, createTextVNode} from "../VDOM/VNode.js";
 import {resolveScopedSlots} from "./helpers/resolve-scoped-slots.js";
-import {_createElement} from "../VDOM/createElement.js";
+import {createElement} from "../VDOM/createElement.js";
 
 
 /**
@@ -34,5 +34,5 @@ export const initRenderHelper = (target) => {
     target._e = createEmptyVNode;
     target._u = resolveScopedSlots;
     target._o = markOnce;
-    target._c = _createElement;
+    target._c = createElement;
 };

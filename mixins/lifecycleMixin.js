@@ -1,3 +1,4 @@
+// mixins/lifecycleMixin.js 实现了一些跟vue生命周期有关的方法，如强制更新：$forceUpdate、卸载实例：$destroy等
 import {callHook, noop, removeArrItem} from "../shared/utils.js";
 import {createEmptyVNode} from "../VDOM/VNode.js";
 import Watcher from "../Observer/Watcher.js";

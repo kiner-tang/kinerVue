@@ -1,4 +1,4 @@
-// utils.js 基础工具库,提供一些工具方法
+// shared/utils.js 基础工具库,提供一些工具方法
 
 import {LIFECYCLE_HOOKS} from "./constants.js";
 import {camelizeRE, hyphenateRE, listDelimiter, propertyDelimiter, simpleCheckRE} from "./RE.js";

@@ -1,3 +1,4 @@
+// render-helpers/helpers/bind-object-listeners.js 运行时使用的_g方法，用于绑定一个事件监听对象
 import {isPlainObject, warn} from "../../shared/utils.js";
 
 /**

@@ -1,3 +1,4 @@
+// compiler/helper.js 定义了一些在解析模板生成抽象语法树时的助手方法
 import {parseFilter} from "./filter-paser.js";
 import {
     camelize,
@@ -25,6 +26,12 @@ import {
 import {genAssignmentCode} from "./directives/model.js";
 import {AST_ITEM_TYPE} from "../shared/constants.js";
 
+/**
+ * 对绑定有v-model的input进行预处理，主要是对checkbox和radio进行特殊处理
+ * @param elem
+ * @param options
+ * @returns {{type: string, tag: *, attrList: *, parent: Window, children: Array}}
+ */
 export const preTransformNode = (elem, options) => {
     const {tag, attrsMap} = elem;
     // 当且仅当标签名是input且有绑定v-model属性时需要预处理

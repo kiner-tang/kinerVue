@@ -1,3 +1,5 @@
+// compiler/to-function.js 提供了将我们代码生成器的代码转换为渲染函数的方法
+
 import {extend, noop, warn} from "../shared/utils.js";
 
 

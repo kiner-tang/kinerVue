@@ -1,0 +1,1 @@
+// VDOM/patch.js 此文件实现虚拟DOM的patching算法，对新旧虚拟DOM进行diff，找出最少的更新

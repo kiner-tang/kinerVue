@@ -1,4 +1,4 @@
-
+// compiler/create-compiler.js 本文件是用来构建编译器创建方法的工厂，可以根据提供的基础编译器返回一个能够生成优化过的编译器和能够直接生成渲染函数的编译器
 import {extend} from "../shared/utils.js";
 import {createCompileToFunctionFn} from "./to-function.js";
 

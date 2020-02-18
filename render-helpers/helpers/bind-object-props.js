@@ -1,3 +1,4 @@
+// render-helpers/helpers/bind-object-props.js 运行时的_b方法，用于绑定一个对象属性
 import {
     arrayToObject,
     camelize,

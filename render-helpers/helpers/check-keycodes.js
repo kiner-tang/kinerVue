@@ -1,3 +1,4 @@
+// render-helpers/helpers/check-keycodes.js 运行时的_k方法，用于检测目标键名或键值是否在内置键名或键值以及自定义键值中不存在
 import {isA} from "../../shared/utils.js";
 import config from "../../config.js";
 

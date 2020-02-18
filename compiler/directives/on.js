@@ -1,3 +1,4 @@
+// compiler/directives/on.js v-on指令生成代码片段
 /**
  * v-on指令生成代码片段
  * @param elem

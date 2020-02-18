@@ -1,8 +1,13 @@
+// compiler/index.js 通过编译器创建工厂创建一个可以统一生成编译器的方法，调用创建的方法可以返回我们期待的渲染函数
 import {createCompilerCreater} from "./create-compiler.js";
 import {parse} from "./compile-tpl-to-ast.js";
 import {optimize} from "./optimize.js";
 import {generate} from "./codegen";
 
+/**
+ * 通过工厂创建可以统一生成编译器的方法
+ * @type {function(*=): {compile: (function(*, *): *), compileToFunctions: *}}
+ */
 export const createCompiler = createCompilerCreater(function baseCompile(template, options) {
     // 根据模板与配置生成一个抽象语法树
     const ast = parse(template, options);

@@ -1,3 +1,4 @@
+// render-helpers/helpers/bind-dynamic-keys.js 即运行时执行的_d方法，用于处理一些东岱的属性
 import {isString, warn} from "../../shared/utils.js";
 
 /**

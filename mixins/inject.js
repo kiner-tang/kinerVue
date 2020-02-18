@@ -1,3 +1,4 @@
+// mixins/inject.js 初始化注入的依赖的收集逻辑
 import {defineReactive, toggleObserve} from "../Observer/Observer.js";
 import {hasSymbol, isFn, warn} from "../shared/utils.js";
 

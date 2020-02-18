@@ -1,3 +1,5 @@
+// shared/RE.js 存放了几乎整个项目要用到的正则表达式
+
 /**
  * 识别用-作为分隔符的字符串，如："my-new-component"
  * @type {RegExp}
