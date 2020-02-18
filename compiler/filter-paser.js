@@ -2,6 +2,7 @@
  * 解析过滤器
  * @param exp
  */
+
 export const parseFilter = exp => {
     // 通过split将表达式切割成过滤器列表
     let filters = exp.split("|");
@@ -14,6 +15,7 @@ export const parseFilter = exp => {
         });
         return expression;
     }
+    return exp;
 };
 
 /**
@@ -23,6 +25,7 @@ export const parseFilter = exp => {
  * @returns {string}
  */
 export const wrapFilter = (exp, filter) => {
+    // 转义引号
     // 看一下过滤器有没有带参数
     const index = filter.indexOf('(');
 
@@ -30,8 +33,8 @@ export const wrapFilter = (exp, filter) => {
         return `_f("${filter}")(${exp})`;
     }else{
         const filterName = filter.slice(0,index);
-        const args = filter.slice(index+1);
+        let args = filter.slice(index+1);
 
-        return `_f("${filterName}")(${exp}${args}`;
+        return `_f("${filterName}")(${exp},${args}`;
     }
 };

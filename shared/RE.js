@@ -215,3 +215,34 @@ export const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
  * @type {RegExp}
  */
 export const regexEscapeRE = /[-.*+?^${}()|[\]\/\\]/g;
+
+/**
+ * 是否是函数表达式
+ * 主要解析如下情况：
+ * function(
+ * (function(){
+ * function(arg
+ * ()=>
+ * arg=>
+ * @type {RegExp}
+ */
+export const fnExpRE = /^([\w$_]+|\([^)]*?\))\s*=>|^function(?:\s+[\w$]+)?\s*\(/;
+/**
+ * 是不是函数调用
+ * 主要解析如下情况：
+ * ();
+ * (arg);
+ * @type {RegExp}
+ */
+export const fnInvokeRE = /\([^)]*?\);*$/;
+/**
+ * 是否是一个简单的路径
+ * 主要解析的是如下这些情况：
+ * handler
+ * obj.handler
+ * obj["handler"]
+ * obj["handler"].handler
+ * obj[handler["handler"]]
+ * @type {RegExp}
+ */
+export const simplePathRE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\['[^']*?']|\["[^"]*?"]|\[\d+]|\[[A-Za-z_$][\w$]*])*$/;

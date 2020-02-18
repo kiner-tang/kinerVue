@@ -4,7 +4,7 @@ import {
     emptyObject,
     extend,
     hasDynamicAttr, hyphenate,
-    isA,
+    isA, isDef,
     mustUseProp,
     parseStyleText,
     warn
@@ -49,7 +49,7 @@ export const preTransformNode = (elem, options) => {
         }
 
         // 如果经过上面两轮查找都没有找到type,那就不用找了，使用者压根就没有绑定type，直接退出即可
-        if (typeBindingValue !== null) {
+        if (isDef(typeBindingValue)) {
             return;
         }
 
@@ -78,7 +78,7 @@ export const preTransformNode = (elem, options) => {
         // 看看有没有v-else-if语句
         const elseIfCondition = getAndRemoveAttr(elem, 'v-else-if', true);
         // 看看有没有v-else语句,由于v-else语句没有表达式，因此我们只要看看有没有这个属性即可，不用看他的值是否存在
-        const elseConfition = getAndRemoveAttr(elem, 'v-else', true) !== null;
+        const elseConfition = isDef(getAndRemoveAttr(elem, 'v-else', true));
 
         //// 如果当前elem是checkbox的情况
 
@@ -167,8 +167,8 @@ export const getBindingAttr = (elem, attrName, getStatic = true) => {
         if (staticValue) {
             return JSON.stringify(staticValue);
         }
-
     }
+
 };
 
 /**
@@ -191,9 +191,9 @@ export const getRawBindingAttr = (elem, attrName) => {
  * @returns {*}
  */
 export const getAndRemoveAttr = (elem, attrName, removeFromMap) => {
-    let attrVal;
+    let attrVal=null;
     // 只有属性存在才执行
-    if ((attrVal = elem.attrsMap[attrName]) !== null) {
+    if (isDef(attrVal = elem.attrsMap[attrName])) {
         // 从attrList中查找并删除后该属性
         let list = elem.attrList;
         for (let i = 0, l = list.length; i < l; i++) {
@@ -206,6 +206,9 @@ export const getAndRemoveAttr = (elem, attrName, removeFromMap) => {
     // 只有明确要求需要从map中删除属性时才从map中删除
     if (removeFromMap) {
         delete elem.attrsMap[attrName];
+    }
+    if(attrVal===undefined){
+        attrVal = null;
     }
     return attrVal;
 };
@@ -229,7 +232,7 @@ export const addRawAttr = (elem, name, value, range) => {
  * @param range
  */
 export const addIfCondition = (elem, condition, range) => {
-    (elem.ifConditions || (elem.ifConditions = [])).push(setItemWithRange(addIfCondition, range));
+    (elem.ifConditions || (elem.ifConditions = [])).push(setItemWithRange(condition,range));
 };
 
 /**
@@ -270,13 +273,13 @@ export const addProp = (elem, name, value, range, dynamic) => {
  * @param rawName       指令原始名称
  * @param value         指令表达式
  * @param arg           指令的参数
- * @param dynamic       参数是否是动态的
- * @param modifier      修饰符
+ * @param isDynamicArg  参数是否是动态的
+ * @param modifiers     修饰符
  * @param range         插入范围
  */
-export const addDirective = (elem, name, rawName, value, arg, dynamic, modifier, range) => {
+export const addDirective = (elem, name, rawName, value, arg, isDynamicArg, modifiers, range) => {
     // 将指令加入到抽象语法树节点的指令列表中（不存在指令列表则新建）
-    (elem.directives || (elem.directives = [])).push(setItemWithRange({}, range));
+    (elem.directives || (elem.directives = [])).push(setItemWithRange({name, rawName, value, arg, isDynamicArg, modifiers}, range));
     // 新增了指令，当前元素不再是普通元素
     elem.plain = false;
 };
@@ -444,7 +447,7 @@ export const setItemWithRange = (item, range) => {
  * @param elem
  */
 export const processPre = elem => {
-    (getAndRemoveAttr(elem, 'v-pre') !== null) && (elem.pre = true);
+    (isDef(getAndRemoveAttr(elem, 'v-pre'))) && (elem.pre = true);
 };
 
 /**
@@ -478,7 +481,7 @@ export const processRawAttrs = elem => {
  */
 export const processFor = (elem) => {
     let exp;// v-for的表达式,只有当表达式不为空时才需要解析
-    if ((exp = getAndRemoveAttr(elem, 'v-for')) !== null) {
+    if (isDef(exp = getAndRemoveAttr(elem, 'v-for'))) {
         // 解析表达式
         let res = parseFor(exp);
         if (res) {
@@ -514,9 +517,10 @@ export const processIf = elem => {
             block: elem
         });
     }else{// 不存在v-if，再看看有没有v-else-if或v-else
+        (isDef(getAndRemoveAttr(elem, 'v-else'))) && (elem.else = true);
         let elseIf;
         (elseIf = getAndRemoveAttr(elem, 'v-else-if')) && (elem.elseIf = elseIf);
-        (getAndRemoveAttr(elem, 'v-else') != null) && (elem.eles = true);
+
     }
 };
 
@@ -926,7 +930,7 @@ export const processComponent = elem => {
         elem.component = dynamicTarget;
     }
     // 如果组件存在inline-template属性，说明该组件使用了内联模板，标记一下
-    if (getBindingAttr(elem, 'inline-template') !== null) {
+    if (isDef(getBindingAttr(elem, 'inline-template'))) {
         elem.inlineTemplate = true;
     }
 };
@@ -1036,6 +1040,7 @@ export const processKey = (elem) => {
             warn(`当transition-group的子标签是通过循环渲染时，请不用直接使用数组的索引或者是对象的key值作为他的key，因为这样相当于没有加key`);
         }
     }
+    elem.key = exp;
 
     return exp;
 };

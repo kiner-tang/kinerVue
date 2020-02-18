@@ -28,6 +28,17 @@ export const genAssignmentCode = (value, assignment) => {
 
 };
 
+/**
+ * 解析model
+ * test
+ * test[key]
+ * test[test1[key]]
+ * test["a"][key]
+ * xxx.test[a[a].test1[key]]
+ * test.xxx.a["asa"][test1[key]]
+ * @param val
+ * @returns {*}
+ */
 export const parseModel = val => {
     val = val.trim();
     len = val.length;

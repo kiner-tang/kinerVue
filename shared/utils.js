@@ -1,8 +1,8 @@
 // utils.js 基础工具库,提供一些工具方法
 
 import {LIFECYCLE_HOOKS} from "./constants.js";
-import config from "../config";
 import {camelizeRE, hyphenateRE, listDelimiter, propertyDelimiter, simpleCheckRE} from "./RE.js";
+import config from "../config.js";
 
 /**
  * 判断对象是否支持__proto__属性
@@ -11,6 +11,80 @@ import {camelizeRE, hyphenateRE, listDelimiter, propertyDelimiter, simpleCheckRE
 export const hasProto = '__proto__' in {};
 
 const _toString = Object.prototype.toString;
+
+/**
+ * 将目标值转化为字符串
+ * @param val
+ * @returns {string}
+ */
+export const toString = val => {
+    return val == null
+        ? ''
+        : Array.isArray(val) || (isPlainObject(val) && val.toString === _toString)
+            ? JSON.stringify(val, null, 2)
+            : String(val)
+};
+
+/**
+ * 判断两个参数是否松散相等
+ * 即：如果两个都是普通对象，那么我们看一下他们的特征是否一样
+ * 如：如果两个都是数组，那么只要他们的子元素个数一样，并且子元素也满足松散相等的要求就算他们相等
+ * 再如：如果两个都是日期对象，那么看一下他们的时间戳是否相等，如果相等就认为他们是松散相等
+ * @param a
+ * @param b
+ * @returns {boolean}
+ */
+export const looseEqual = (a, b) => {
+    // 如果这两个值完全相等，那不用做其他处理，直接return true
+    if(a===b) return true;
+
+    const isObjectA = isObject(a);
+    const isObjectB = isObject(b);
+
+    if(isObjectA && isObjectB){ // 如果两个值都是对象的话
+        try{
+            // 再看看是不是两个值都是数组
+            const isArrayA = isA(a);
+            const isArrayB = isA(b);
+
+            if(isArrayA && isArrayB){
+                // 如果两个值都是数组，则判断两个数组是不是长度相等，然后再递归判断数组的每一项是否也符合looseEqual的要求
+                return a.length === b.length && a.every((item, index)=> looseEqual(item, b[index]));
+            }else if (a instanceof Date && b instanceof Date) {
+                // 如果两个值都是日期对象的实例，那么我们看一下他们的时间戳是否相等即可
+                return a.getTime() === b.getTime();
+            }else if(!isArrayA&&!isArrayB){
+                // 如果两个都不是数组，那她就是一个普通的对象，我们看一下他们的key的数量是否相等，
+                // 如果相等再看看每个key对应的值是否符合looseEqual的要求
+                const keysA = Object.keys(a);
+                const keysB = Object.keys(b);
+                return keysA.length===keysB.length&&keysA.every(key=>looseEqual(a[key], b[key]));
+            }else{
+                // 如果不是以上任何一种情况，那么他不满足条件
+                return false;
+            }
+        }catch (e) {
+            return false;
+        }
+    } else if (!isObjectA && !isObjectB) {
+        // 如果两个都不是对象，看一下两个都转成字符串后是否一致
+        return String(a) === String(b);
+    }else{
+        return false;
+    }
+};
+/**
+ * 在数组中查找与目标值松散相等的元素的索引
+ * @param arr
+ * @param val
+ * @returns {number}
+ */
+export const looseIndexOf = (arr, val) => {
+    for(let i=0,l=arr.length;i<l;i++){
+        if(looseEqual(arr[i],val)) return i;
+    }
+    return -1;
+};
 
 /**
  * 判断传递过来的对象是否是纯对象
@@ -52,7 +126,9 @@ export const hasSymbol = typeof Symbol !== 'undefined' && isNative(Symbol) &&
  * @param message
  */
 export const warn = function (message) {
-    console.warn(message);
+    if(config.debug.showWarn){
+        console.warn(message);
+    }
 };
 
 
@@ -318,6 +394,11 @@ export const isBuiltInTag = makeMap('slot,component', true);
  * 定义一个空函数，用于对一些参数的默认赋值
  */
 export const noop = () => {};
+/**
+ * 无论传入什么值都返回false
+ * @returns {boolean}
+ */
+export const no = () => false;
 
 /**
  * 返回一个一模一样的结果
@@ -662,11 +743,19 @@ export const sharedPropertyDefinition = {
  * @returns {*}
  */
 export const resolveAsset = (options, type, id) => {
+    if(isUnDef(options)){
+        return;
+    }
     // id只可能是字符串
     if(typeof id !== "string"){
         return;
     }
     const assets = options[type];
+    if(isUnDef(assets)){
+        return;
+    }
+
+    // console.log('+++++',assets);
 
     if(hasOwn(assets, id)) return assets[id];
     // 若传进来的id是"my-filter"形式的字符串，则尝试通过其小驼峰形式字符串进行查找
@@ -886,6 +975,48 @@ export const isIE = UA && /msie|trident/.test(UA);
  */
 export const isTextTag = elem => ["script","style"].includes(elem.tag);
 
+/**
+ * 将一个对象数组转化成对象
+ * @param arr
+ */
+export const arrayToObject = arr => {
+    let res = {};
+    for(let i=0,l=arr.length;i<l;i++){
+        arr[i] && (extend(res, arr[i]));
+    }
+    return res;
+};
+
+/**
+ * vue保留属性名
+ * @type {function(*): *}
+ */
+export const isReservedAttribute = makeMap('key,ref,slot,slot-scope,is');
+
+/**
+ * 将所给值转换成数字
+ * @param val
+ * @returns {number}
+ */
+export const toNumber = val => {
+    let n = parseFloat(val);
+    return isNaN(n)?val:n;
+};
+
+/**
+ * 判断传入值是否为原始数据
+ * @param value
+ * @returns {boolean}
+ */
+export const isPrimitive =  value => {
+    return (
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        typeof value === 'symbol' ||
+        typeof value === 'boolean'
+    )
+};
+
 export default {
     hasProto,
     isPlainObject,
@@ -943,5 +1074,8 @@ export default {
     isForbiddenTag,
     makeAttrsMap,
     extend,
-    parseStyleText
+    parseStyleText,
+    arrayToObject,
+    isReservedAttribute,
+    toNumber
 }

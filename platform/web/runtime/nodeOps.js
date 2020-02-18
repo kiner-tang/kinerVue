@@ -3,17 +3,17 @@
 
 /**
  * 创建一个Dom元素
- * @param tagName   标签名
+ * @param tag   标签名
  * @param vnode     虚拟节点，用于描述这个对象的详细信息
  * @returns {HTMLElement | HTMLSelectElement | HTMLLegendElement | HTMLTableCaptionElement | HTMLTextAreaElement | HTMLModElement | HTMLHRElement | HTMLOutputElement | HTMLPreElement | HTMLEmbedElement | HTMLCanvasElement | HTMLFrameSetElement | HTMLMarqueeElement | HTMLScriptElement | HTMLInputElement | HTMLUnknownElement | HTMLMetaElement | HTMLStyleElement | HTMLObjectElement | HTMLTemplateElement | HTMLBRElement | HTMLAudioElement | HTMLIFrameElement | HTMLMapElement | HTMLTableElement | HTMLAnchorElement | HTMLMenuElement | HTMLPictureElement | HTMLParagraphElement | HTMLTableDataCellElement | HTMLTableSectionElement | HTMLQuoteElement | HTMLTableHeaderCellElement | HTMLProgressElement | HTMLLIElement | HTMLTableRowElement | HTMLFontElement | HTMLSpanElement | HTMLTableColElement | HTMLOptGroupElement | HTMLDataElement | HTMLDListElement | HTMLFieldSetElement | HTMLSourceElement | HTMLBodyElement | HTMLDirectoryElement | HTMLDivElement | HTMLUListElement | HTMLHtmlElement | HTMLAreaElement | HTMLMeterElement | HTMLAppletElement | HTMLFrameElement | HTMLOptionElement | HTMLImageElement | HTMLLinkElement | HTMLHeadingElement | HTMLSlotElement | HTMLVideoElement | HTMLBaseFontElement | HTMLTitleElement | HTMLButtonElement | HTMLHeadElement | HTMLParamElement | HTMLTrackElement | HTMLOListElement | HTMLDataListElement | HTMLLabelElement | HTMLFormElement | HTMLTimeElement | HTMLBaseElement}
  */
-export const createElement = (tagName,vnode) => {
+export const createElement = (tag,vnode) => {
     //创建一个dom元素
-    let elem = document.createElement(tagName);
+    let elem = document.createElement(tag);
 
     //TODO ????为啥要将select的multiple拎出来做特殊处理呢？
     //若创建的元素不是<select>标签则直接返回该元素
-    if(tagName!=="select"){
+    if(tag!=="select"){
         return elem;
     }
     //若创建的标签是select,则判断标签属性中是否包含multiple字段并且它的值不能为undefined,如果是，则为元素加上multiple标签,否则直接返回
@@ -81,7 +81,7 @@ export const nextSibling = node => node.nextSibling;
  * @param node
  * @returns {string}
  */
-export const tagName = node => node.tagName;
+export const tag = node => node.tag;
 
 /**
  * 获取给定节点的文本节点

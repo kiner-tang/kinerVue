@@ -1,25 +1,37 @@
 import KinerVue from './platform/web/runtime'
+//
+// let tpl = `<div id="app"><div class="message">你好，{{name}}</div>
+//     <p v-if="userInfo.age===20"><span>这是内联元素</span><div>这是块级元素</div></p>
+//     <!--这是一个注释-->
+//         <ul :title="name">
+//         <li v-for="(item,index) in friends" :key="item+'_'+index"> {{item}}
+//         <li> b
+//         <li> c
+//         <li> d
+//         </ul>
+//         <br/>
+//         <br>
+//         </br>
+//         地方发生反倒是</p></div>`;
 
-let tpl = `<div id="app"><div class="message">你好，{{name}}</div>
-    <p v-if="userInfo.age===20"><span>这是内联元素</span><div>这是块级元素</div></p>
-    <!--这是一个注释-->
-        <ul :title="name">
-        <li v-for="(item,index) in friends" :key="item+'_'+index"> {{item}}
-        <li> b
-        <li> c
-        <li> d
-        </ul>
-        <br/>
-        <br>
-        </br>
-        地方发生反倒是</p></div>`;
+KinerVue.filter('myName',(val,pre)=>{
+    let res = `${pre}${val}`;
+    console.log(`调用过滤器：`,val,pre,res);
+    return res;
+});
 
+KinerVue.filter('iterator',(value,index)=>{
+    return `选项${index}：${value}`;
+});
+
+// console.dir(KinerVue.options.filters);
 let vue = new KinerVue({
     el: '#root',
     // template: tpl,
     data() {
         return {
             name: "kiner",
+            sex: Math.random(),
             userInfo: {
                 age: 20
             },
@@ -37,6 +49,11 @@ let vue = new KinerVue({
     },
     errorCaptured(err, vm, info){
         console.log(info,err,vm);
+    },
+    methods:{
+        enterHandler(){
+            alert('按下了enter键');
+        }
     }
 
 });

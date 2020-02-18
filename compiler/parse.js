@@ -116,7 +116,7 @@ export const parseHTML = (html, options) => {
                 if (startTagMatch) {
                     // 处理开始标签
                     handleStartTag(startTagMatch);
-                    if (shouldIgnoreFirstNewline(startTagMatch.tagName, html)) {
+                    if (shouldIgnoreFirstNewline(startTagMatch.tag, html)) {
                         // 如果在pre和textarea内第一个字符是换行符的话，需要忽略这个换行符，否则在解析文本的时候会出问题
                         advance(1);
                     }
@@ -187,14 +187,14 @@ export const parseHTML = (html, options) => {
 
     /**
      * 用于解析开始标签及其属性等
-     * @returns {{tagName: *, attrs: Array, startIndex: number}}
+     * @returns {{tag: *, attrs: Array, startIndex: number}}
      */
     function parseStartTag() {
         // 解析开始标签
         const start = html.match(startTagOpen);
         if (start) {
             let match = {
-                tagName: start[1],
+                tag: start[1],
                 attrs: [],
                 startIndex: index
             };
@@ -234,7 +234,7 @@ export const parseHTML = (html, options) => {
      * @param match
      */
     function handleStartTag(match) {
-        const {tagName, unarySlash, attrs, startIndex, endIndex} = match;
+        const {tag, unarySlash, attrs, startIndex, endIndex} = match;
 
         // 如果当前标签的上一个标签是一个p标签，并且当前正在解析的标签不是一个段落元素标签，那么我们就直接调用parseEndTag将p标签结束掉
         // 因为在HTML标准中，p标签只能嵌套段落元素，其他元素如果嵌套在p标签中会被自动解析到p标签外面
@@ -244,7 +244,7 @@ export const parseHTML = (html, options) => {
         // <p><span>这是内联元素</span></p><div>这是块级元素</div><p></p>
         // html5标签相关文档链接：https://html.spec.whatwg.org/multipage/indices.html#elements-3
         // 段落标签相关文档链接：https://html.spec.whatwg.org/multipage/dom.html#phrasing-content
-        if (lastTag === "p" && isNonPhrasingTag(tagName)) {
+        if (lastTag === "p" && isNonPhrasingTag(tag)) {
             parseEndTag(lastTag);
         }
         // 如果标签的上一个标签跟当前解析的标签名相同并且当前标签属于"可省略闭合标签"，那么，直接调用parseEndTag把上一个标签结束掉
@@ -264,13 +264,13 @@ export const parseHTML = (html, options) => {
         //     </li><li> d
         // </li></ul>
 
-        if (canBeLeftOpenTag(tagName) && tagName === lastTag) {
+        if (canBeLeftOpenTag(tag) && tag === lastTag) {
             parseEndTag(lastTag);
         }
 
         // 当前解析的标签是否为自闭标签
         // 自闭标签分为两种情况，一种是html内置的自闭标签，一种是用户自定义标签或组件时自闭的
-        const unaryTag = isUnaryTag(tagName) || !!unarySlash;
+        const unaryTag = isUnaryTag(tag) || !!unarySlash;
 
 
         // 由于在不同的浏览器中，对标签属性的处理有所区别，如在IE浏览器中，会将所有的属性值进行一次编码，如：
@@ -289,7 +289,7 @@ export const parseHTML = (html, options) => {
                 "";
 
             // 若解析的标签是a标签且当前属性名是href，则根据当前浏览器环境看是否需要对\n换行符进行解码（有些浏览器会对属性值进行编码处理）
-            const theShouldDecodeNewlines = tagName === 'a' && attrMatch[1] === 'href'
+            const theShouldDecodeNewlines = tag === 'a' && attrMatch[1] === 'href'
                 ? shouldDecodeNewlinesForHref
                 : shouldDecodeNewlines;
 
@@ -302,18 +302,18 @@ export const parseHTML = (html, options) => {
         // 判断当前标签是否为自闭标签，若不是自闭标签，则需要将解析出来的当前标签的信息压入栈中，方便后续用来匹配标签以及查找父级使用
         if (!unaryTag) {
             stack.push({
-                tag: tagName,
-                lowerCaseTag: tagName.toLowerCase(),
+                tag: tag,
+                lowerCaseTag: tag.toLowerCase(),
                 attrs: newAttrs,
                 startIndex: match.startIndex,
                 endIndex: match.endIndex
             });
             // 将当前标签名赋值给lastTag，方便后续的对比操作
-            lastTag = tagName;
+            lastTag = tag;
         }
 
         // 开始标签的信息已经解析完毕，通知钩子函数
-        startHook(tagName, newAttrs, unaryTag, startIndex, endIndex);
+        startHook(tag, newAttrs, unaryTag, startIndex, endIndex);
 
 
     }
@@ -329,12 +329,12 @@ export const parseHTML = (html, options) => {
         return val.replace(reg, match => decodingMap[match]);
     }
 
-    function parseEndTag(tagName, startIndex = index, endIndex = index) {
+    function parseEndTag(tag, startIndex = index, endIndex = index) {
         let pos,// 用于查找当前结束标签对应开始标签的游标变量
             lowerCaseTagName;// 当前结束标签的小写标签名
 
-        if (tagName) {
-            lowerCaseTagName = tagName.toLowerCase();
+        if (tag) {
+            lowerCaseTagName = tag.toLowerCase();
             // 通过结束标签名在标签栈中从上往下查找最近的一个匹配标签，并返回标签的游标索引
             pos = stack.findIndex(tag => tag.lowerCaseTag === lowerCaseTagName);
         } else {
@@ -354,13 +354,13 @@ export const parseHTML = (html, options) => {
             // 这里就是匹配第三中写法的，虽然这种写法很少见，而且不太推荐使用，
             // 但在html中这么使用确实是不会报错，所以还是要兼容一下
             // 因为br是自闭标签，也没没有什么其他情况需要处理的，我们指直接触发他的startHook就可以了
-            startHook(tagName, [], true, startIndex, endIndex);
+            startHook(tag, [], true, startIndex, endIndex);
 
         } else if (lowerCaseTagName === "p") {
             // 由于通过pos没能在标签栈中找到与当前p标签匹配的开始标签，因此，这个标签应该是一个 </p> 的一个单独的标签
             // 因为在html解析的时候，遇到这样一个单独的闭合p标签，会自动解析为<p></p>,因此，此时既要触发startHook也要出发endHook
-            startHook(tagName, [], false, startIndex, endIndex);
-            endHook(tagName, startIndex, endIndex);
+            startHook(tag, [], false, startIndex, endIndex);
+            endHook(tag, startIndex, endIndex);
         }
 
     }
@@ -412,7 +412,7 @@ export const parseText = (text, delimiters) => {
         // 解析过滤器
         exp = parseFilter(exp);
         // 将解析出来的变量转化为调用方法的方式并加入结果数组如：_s(name)
-        res.push(`window._s('${exp}')`);
+        res.push(`_s(${exp})`);
         rawTokens.push({ '@binding': exp });
 
         // 设置lastIndex保证下一次循环不会重复匹配已经解析过的文本

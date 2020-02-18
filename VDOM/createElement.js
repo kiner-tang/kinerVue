@@ -1,11 +1,22 @@
-import {isDef} from "../shared/utils.js";
+import {hasOb, isDef, warn} from "../shared/utils.js";
 import {createElemVNode, createEmptyVNode, createTextVNode} from "./VNode.js";
+import {normalizeChildren} from "./helpers.js";
 
-export const createElement = (ctx,tag,data,children,textContent,isComment) => {
-    return _createElement(ctx,tag,data,children,textContent,isComment);
+export const createElement = (tag,data,children,textContent,isComment,ctx) => {
+    return _createElement(tag,data,children,textContent,isComment,ctx);
 };
 
-export const _createElement = (ctx,tag,data,children,textContent,isComment) => {
+export const _createElement = (tag,data,children,textContent,isComment,ctx) => {
+
+    if(isDef(data) && hasOb(data)){
+        warn(`避免使用已经被Observer观察的数据作为元素的数据对象`);
+        return createEmptyVNode();
+    }
+    if(isDef(data) && isDef(data.is)){
+        tag = data.is;
+    }
+
+    children = normalizeChildren(children);
 
     let vnode;
     //判断tag是否存在，若存在，则为元素或组件节点

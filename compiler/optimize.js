@@ -7,6 +7,7 @@ let isStaticKey;
 
 export const optimize = root => {
 
+    // 将所有的静态属性都罗列出来，方便区分动态属性
     isStaticKey = genStaticKeysCached('');
     // 标记所有静态节点
     markStatic(root);

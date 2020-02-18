@@ -95,10 +95,10 @@ export const initGlobalApi = KinerVue => {
     ASSET_TYPES.forEach(type => {
         let key = `${type}s`;
         // 用于存储指令集
-        KinerVue.options[key] = Object.create(null);
+        KinerVue.options[key] = {};
         KinerVue[type] = function (id, fn) {
             if(!fn){
-                return this.options[key][id];
+                return KinerVue.options[key][id];
             }else{
                 if(type==="component"){
                     if(isPlainObject(fn)){
@@ -108,7 +108,7 @@ export const initGlobalApi = KinerVue => {
                 }else if(type==="directive"&&isFn(fn)){
                     fn = {bind: fn, update: fn};
                 }
-                this.options[key][id] = fn;
+                KinerVue.options[key][id] = fn;
                 return fn;
             }
         }
