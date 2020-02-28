@@ -1,18 +1,21 @@
-import KinerVue from './platform/web/runtime'
-//
-// let tpl = `<div id="app"><div class="message">你好，{{name}}</div>
-//     <p v-if="userInfo.age===20"><span>这是内联元素</span><div>这是块级元素</div></p>
-//     <!--这是一个注释-->
-//         <ul :title="name">
-//         <li v-for="(item,index) in friends" :key="item+'_'+index"> {{item}}
-//         <li> b
-//         <li> c
-//         <li> d
-//         </ul>
-//         <br/>
-//         <br>
-//         </br>
-//         地方发生反倒是</p></div>`;
+import KinerVue from './platform/web/runtime/entry.js'
+
+let tpl = `<div id="root">
+<div class="message">你好，{{name|myName('我的名字叫：')}}</div>
+    <p><span>这是内联元素</span><div>这是块级元素</div></p>
+    <!--这是一个注释-->
+    <ul>
+        <li v-for="(item,index) in friends" :key="item+'_'+index"> {{item|iterator(index)}}
+        <li v-if="sex<0.3" :title="sex"> b
+        <li v-else-if="sex>=0.3&&sex<0.6" :title="sex"> c
+        <li v-else :title="sex"> d
+        <li @keydown.enter="enterHandler"> e
+    </ul>
+    <br/>
+    <br>
+    </br>
+    地方发生反倒是</p>
+</div>`;
 
 KinerVue.filter('myName',(val,pre)=>{
     let res = `${pre}${val}`;
@@ -26,8 +29,9 @@ KinerVue.filter('iterator',(value,index)=>{
 
 // console.dir(KinerVue.options.filters);
 let vue = new KinerVue({
-    el: '#root',
+    // el: '#root',
     // template: tpl,
+    comments: true,
     data() {
         return {
             name: "kiner",
@@ -56,7 +60,12 @@ let vue = new KinerVue({
         }
     }
 
-});
+}).$mount('#root');
+
+if(vue.$options.render){
+    let vdom = vue.$options.render.call(vue);
+    console.log('虚拟节点树：',vdom);
+}
 vue.$watch(function () {
     return this.userInfo.age+this.classify[1];
 },(newVal, oldVal) => {

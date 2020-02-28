@@ -38,7 +38,7 @@ export const parseHTML = (html, options) => {
         end: endHook = noop,
         chars: charsHook = noop,
         comment: commentHook = noop,
-        shouldKeepComment = true,// 是否需要保留注释
+        comments: shouldKeepComment = true,// 是否需要保留注释
         shouldDecodeNewlinesForHref = false,// 是否应该对a标签的href进行一次编码
         shouldDecodeNewlines = false// 是否应该对属性值进行一次编码
     } = options;
@@ -71,12 +71,13 @@ export const parseHTML = (html, options) => {
                             // 截取注释文本 <!-- 注释文本 -->
                             commentHook(html.substring(4, commentEnd), index, index + commentEnd + endChars.length);
 
-                            // 指针向前，指向注释标签的后面一个节点
-                            advance(commentEnd + endChars.length);
-
-                            // 本次处理完毕，继续下一次的字符串切割处理
-                            continue;
                         }
+
+                        // 指针向前，指向注释标签的后面一个节点
+                        advance(commentEnd + endChars.length);
+
+                        // 本次处理完毕，继续下一次的字符串切割处理
+                        continue;
                     }
                 }
 

@@ -1,18 +1,14 @@
 // kinerVue.js 简易版小程序入口
 import Watcher from './Observer/Watcher.js';
-import Observer, {set, del} from './Observer/Observer.js'
-import {createElement} from "./VDOM/createElement.js";
-import {parseText} from "./compiler/parse.js";
+import {set, del} from './Observer/Observer.js'
 import initMixin from "./mixins/initMixin.js";
 import initEventMixin, {initEvent} from "./mixins/eventMixin.js";
-import initLifecycleMixin from "./mixins/lifecycleMixin.js";
+import {initLifecycle,lifecycleMixin}  from "./mixins/lifecycleMixin.js";
 import {initRenderMixin} from "./mixins/renderMixin.js";
-import {initGlobalApi} from "./globalApi.js";
 import {callHook} from "./shared/utils.js";
 import {initState} from "./mixins/initState.js";
 import {initInjection} from "./mixins/inject.js";
 import {initProvide} from "./mixins/initProvide.js";
-import {compile,compileToFunctions} from "./platform/web/compiler";
 import {initRenderHelper} from './render-helpers/index.js';
 // 预期用法
 // let vue = new KinerVue({
@@ -61,19 +57,23 @@ class KinerVue {
 
         initState(this);
         initEvent(this);
+        initLifecycle(this);
         initEventMixin(KinerVue);
-        initLifecycleMixin(KinerVue);
+        lifecycleMixin(KinerVue);
         initRenderMixin(KinerVue);
 
-        // 测试编译器 start
 
-        const compiled = compileToFunctions(this.$tpl,{});
-
+        // 安装渲染帮助者
         initRenderHelper(this);
         this._renderProxy = this;// 渲染时的上下文，其实就是vue实例
-        this.$options.staticRenderFns = compiled.staticRenderFns;// 将静态渲染函数挂载到$options上
-        let res = compiled.render.call(this);// 调用渲染函数生成虚拟节点树
-        console.log(`虚拟dom节点：`,res);
+
+        // 测试编译器 start
+        //
+        // const compiled = compileToFunctions(this.$tpl,{});
+        //
+        // this.$options.staticRenderFns = compiled.staticRenderFns;// 将静态渲染函数挂载到$options上
+        // let res = compiled.render.call(this);// 调用渲染函数生成虚拟节点树
+        // console.log(`虚拟dom节点：`,res);
 
         // 测试编译器 end
 

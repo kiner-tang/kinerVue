@@ -32,6 +32,10 @@ class VNode {
         this.functionalContext = functionalContext;
         this.functionalOptions = functionalOptions;
         this.isStatic = false;//是否静态节点，如：<p>这是一个静态节点，因为无论状态如何改变，他都不会变化</p>
+        this.fnScopeId = undefined;// 函数组价作用域id
+        this.key = data && data.key;
+        this.isRootInsert = true;// 是否在根节点下插入
+        this.isOnce = false;// 是否只渲染一次
     }
 
     /**

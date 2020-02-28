@@ -100,6 +100,15 @@ export const isPlainObject =  function(obj){
 };
 
 /**
+ * 判断所给值是否是一个正则表达式
+ * @param value
+ * @returns {boolean}
+ */
+export function isRegExp (value) {
+    return _toString.call(value) === '[object RegExp]'
+}
+
+/**
  * 判断是否为非空对象
  * @param obj
  * @returns {boolean}
@@ -773,6 +782,20 @@ export const resolveAsset = (options, type, id) => {
     return res;
 
 };
+/**
+ * 获取并删除后数组中的某个元素
+ * @param arr
+ * @param item
+ * @returns {T[]}
+ */
+export const getAndremoveItemFromArr = (arr, item) => {
+    if(arr.length){
+        let index = arr.indexOf(item);
+        if(index>=0){
+            return arr.splice(index,1);
+        }
+    }
+};
 
 /**
  * 可通过此方法进行新增、删除、替换数组元素
@@ -1017,65 +1040,57 @@ export const isPrimitive =  value => {
     )
 };
 
-export default {
-    hasProto,
-    isPlainObject,
-    isObject,
-    hasSymbol,
-    warn,
-    def,
-    removeArrItem,
-    isEqual,
-    parseExp,
-    patchToProto,
-    copyArgument,
-    defProtoOrArgument,
-    hasOwn,
-    hasOb,
-    isFn,
-    isA,
-    isValidArrayIndex,
-    callHook,
-    isNative,
-    query,
-    outerHTML,
-    isDef,
-    isUnDef,
-    isPlainTextElement,
-    isHTMLTag,
-    isSVG,
-    isPreTag,
-    isReservedTag,
-    noop,
-    mergeOptions,
-    handleError,
-    globalHandleError,
-    logger,
-    cached,
-    invokeWithErrorHandle,
-    nativeWatch,
-    isString,
-    getType,
-    isSameType,
-    camelize,
-    hyphenate,
-    getPropDefaultValue,
-    capitalize,
-    toRawType,
-    isReserved,
-    sharedPropertyDefinition,
-    identity,
-    resolveAsset,
-    dueArrItemByIndex,
-    isNonPhrasingTag,
-    decodingMap,
-    isUnaryTag,
-    canBeLeftOpenTag,
-    isForbiddenTag,
-    makeAttrsMap,
-    extend,
-    parseStyleText,
-    arrayToObject,
-    isReservedAttribute,
-    toNumber
-}
+/**
+ * 根据所给元素获取outerHTML，若所给元素本身没有outerHTML,则给他外层包一个div，并返回div的innerHTML
+ * @param elem
+ * @returns {*}
+ */
+export const getOuterHTML = elem => {
+    if(elem.outerHTML){
+        return elem.outerHTML;
+    }else{
+        const container = document.createElement('div');
+        container.appendChild(elem.cloneNode(true));
+        return container.innerHTML;
+    }
+};
+
+/**
+ * 所有文本类型的文本框
+ * @type {function(*): *}
+ */
+export const isTextInputType = makeMap('text,number,password,search,email,tel,url');
+
+// 用于缓存未知标签
+const unKnownElementCache = Object.create(null);
+/**
+ * 判断所给标签名是否是未知标签
+ * @param tagName
+ * @returns {*}
+ */
+export const unknownElement = (tagName) => {
+    // 如果不是在浏览器端，则直接返回true
+    if(!inBrowser){
+        return true;
+    }
+    // 如果是html或svg的保留标签，直接返回false
+    if(isReservedTag(tagName)){
+        return false;
+    }
+
+    // 将标签名转换为小写
+    tagName = tagName.toLowerCase();
+
+    // 如果缓存中已经有了该标签，直接使用缓存中的结果就行了
+    if(unKnownElementCache[tagName]!==null){
+        return unKnownElementCache[tagName];
+    }
+    const elem = document.createElement(tagName);
+
+    if(tagName.indexOf('-')>-1){
+        return (unKnownElementCache[tagName] = (el.constructor === window.HTMLElement || el.constructor === window.HTMLUnknownElement));
+    }else{
+        return (unKnownElementCache[tagName] = /HTMLUnknownElement/.test(elem.toString()))
+    }
+
+};

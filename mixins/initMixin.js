@@ -13,16 +13,6 @@ export default KinerVue => {
 
         vm.$options = mergeOptions(options, vm.$options);
 
-        // 父类
-        let parent = vm.$options.$parent;
-        // 在父类的children下添加当前实例作为子类
-        parent&&parent.$children.push(vm);
-
-        //子类
-        vm.$children = [];
-        vm.$parent = parent;
-        vm.$root = parent?parent.$root:vm;
-
         vm.$refs = [];
 
         vm.$data = vm.$options.data.apply(vm);

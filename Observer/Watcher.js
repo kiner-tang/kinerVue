@@ -8,7 +8,13 @@ import {traverse} from "./Traverse.js";
 
 class Watcher {
 
-    constructor(vm,expOrFn,cb=function(){},options={immediate: true,deep: false,computed: false}){
+    constructor(vm,expOrFn,cb=function(){},options={immediate: true,deep: false,computed: false},isRenderWatcher=false/*用于标记是否是渲染函数的watcher*/){
+
+        // 如果当前watcher是渲染函数中创建的，则在vm上将当前实例挂载上去
+        if(isRenderWatcher){
+            vm._watcher = this;
+        }
+
         // 创建实例时，将当前实例对象指向Dep的静态属性target
         this.$vm = vm;
         // 需要坚挺的表达式或者是给定的函数（注：如为函数，则可在函数内使用到的响应化对象属性都会被观察，一旦任一属性值发生变化，都会触发cb回调通知）
@@ -21,6 +27,12 @@ class Watcher {
         //// 此后，一旦userInfo下面的任一属性，包括子对象、数组中的值发生改变，上述的$watch都能够观察得到
         this.options = options;
 
+        // 在触发更新之前将会被调用的钩子函数
+        this.before = options.before;
+
+        // 当前watcher是否处于活动状态，如果触发了unWatch则为false
+        this.active = true;
+
         // 若给出的是函数，则直接将其赋值给gutter
         if(isFn(expOrFn)){
             this.gutter = expOrFn;
@@ -32,6 +44,8 @@ class Watcher {
 
         // 观察者通知的回调函数
         this.cb = cb;
+
+
 
 
         // 为实现取消订阅功能，需要知道watcher都订阅了哪些依赖，在取消订阅时，秩序把对应的依赖从依赖列表移除即可
@@ -126,11 +140,24 @@ class Watcher {
         }
     }
 
+    run(){
+        if(this.active){
+            // 接收到更新通知时，触发get方法获取改表达式最新的值
+            const value = this.get();
+            if(this.value!==value||isObject(value)){
+                const oldVal = this.value;
+                this.value = value;
+                // 将新旧值传递给回调函数，即完成$watch('xxxxx',function(newVal,oldVal){})的通知
+                this.cb.call(this.$vm,value,oldVal);
+            }
+        }
+    }
+
     // 中转站已经收到快递了，准备派送，通知各位快递小哥过来拿各自负责区域（视图中的表达式或$watch中监听的方法）的快递进行派送
     getAnInvoke(cb){
         // 接收到更新通知时，触发get方法获取改表达式最新的值
         const value = this.get();
-        // vue源码中：如果value是数组/对象时，我们通过$watch((newVal,oldVal)=>{})获取到的newVal和oldVal其实是始终相等的，因为他们都是东一个对象的引用
+        // vue源码中：如果value是数组/对象时，我们通过$watch((newVal,oldVal)=>{})获取到的newVal和oldVal其实是始终相等的，因为他们都是同一个对象的引用
         if(this.value!==value||isObject(value)){
 
             const oldVal = this.value;
@@ -164,10 +191,15 @@ class Watcher {
      * 取消观察，移除依赖列表中所有的当前观察者
      */
     unWatch(){
-        let len = this.deps.length;
-        while (len--){
-            this.deps[len].removeSub(this);
+        // 对当前活动的watcher取消观察
+        if(this.active){
+            let len = this.deps.length;
+            while (len--){
+                this.deps[len].removeSub(this);
+            }
+            this.active = false;
         }
+
     }
 
 }

@@ -96,3 +96,4 @@ export const textContent = node => node.textContent;
  * @param scopeId
  */
 export const setStyleScope = (node, scopeId) => node.setAttribute(scopeId,'');
+

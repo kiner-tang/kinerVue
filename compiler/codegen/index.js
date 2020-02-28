@@ -289,7 +289,12 @@ export const genDirectives = (ast, state) => {
         return res.slice(0, -1) + ']';
     }
 };
-
+/**
+ * 生成元素代码片段
+ * @param ast
+ * @param state
+ * @returns {*}
+ */
 export const genElement = (ast, state) => {
     // 如果当前元素存在父级，那么，如果他的父级被标记为v-pre，那么作为子元素的ast也肯定不会被编译的
     if (ast.parent) {

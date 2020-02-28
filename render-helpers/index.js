@@ -9,7 +9,7 @@ import {resolveFilter} from "./helpers/resolve-filter.js";
 import {looseEqual, looseIndexOf, toNumber, toString} from "../shared/utils.js";
 import {createEmptyVNode, createTextVNode} from "../VDOM/VNode.js";
 import {resolveScopedSlots} from "./helpers/resolve-scoped-slots.js";
-import {createElement} from "../VDOM/createElement.js";
+// import {createElement} from "../VDOM/createElement.js";
 
 
 /**
@@ -34,5 +34,6 @@ export const initRenderHelper = (target) => {
     target._e = createEmptyVNode;
     target._u = resolveScopedSlots;
     target._o = markOnce;
-    target._c = createElement;
+    // 由于创建元素节点需要上下文，因此将穿件元素节点的方法挪到initRender，在渲染的时候再挂载
+    // target._c = createElement;
 };

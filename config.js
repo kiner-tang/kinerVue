@@ -16,5 +16,8 @@ export default {
      * @param vm
      * @param info
      */
-    errorHandler: (err, vm, info) => console.error(`%c${info}：`,"color:rgb(210, 34, 94);",err,vm)
+    errorHandler: (err, vm, info) => console.error(`%c${info}：`,"color:rgb(210, 34, 94);",err,vm),
+    // 忽略一些自定义元素
+    ignoredElements: [],
+
 };
