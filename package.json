@@ -1,0 +1,20 @@
+{
+  "name": "kinerVue",
+  "version": "1.0.0",
+  "description": "> KinerVue是本人在学习Vue源码时尝试实现的一个简易版的Vue项目，其中加入了部分自己的理解",
+  "main": "kinerVue.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiner-tang/kinerVue.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kiner-tang/kinerVue/issues"
+  },
+  "homepage": "https://github.com/kiner-tang/kinerVue#readme"
+}
